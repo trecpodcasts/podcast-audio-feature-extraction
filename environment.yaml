@@ -1,0 +1,17 @@
+name: podcast-dataset
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - black=20.8b1
+  - pretty_errors=1.2.19
+  - numpy=1.19.5
+  - pandas=1.2.0
+  - matplotlib=3.3.3
+  - jupyterlab=3.0.5
+  - cudnn=7.6.5=cuda10.1_0
+  - hydra-core=1.0.5
+  - pip
+  - pip:
+    - tensorflow==2.3.2
