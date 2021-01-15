@@ -34,9 +34,7 @@ def main(cfg: DictConfig) -> None:
         cfg (DictConfig): configuration dictionary
     """
     setup_gpus()  # Setup the GPUs
-    print(
-        "Configuration: \n{}".format(OmegaConf.to_yaml(cfg))
-    )  # Print the configuration
+    print("Config: \n{}".format(OmegaConf.to_yaml(cfg)))  # Print the configuration
 
 
 if __name__ == "__main__":
