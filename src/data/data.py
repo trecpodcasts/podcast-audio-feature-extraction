@@ -25,8 +25,8 @@ def find_file_paths(show_filename_prefix, episode_filename_prefix):
     # TODO also include the sets for summarization-testset
     """
     relative_file_path = os.path.join(
-        show_filename_prefix[5],
-        show_filename_prefix[6],
+        show_filename_prefix[5].upper(),
+        show_filename_prefix[6].upper(),
         show_filename_prefix,
         episode_filename_prefix
     )
@@ -39,8 +39,8 @@ def find_file_paths(show_filename_prefix, episode_filename_prefix):
     
     audio_path = os.path.join(
         DATA_PATH,
-        "podcasts-transcripts/",
-        relative_file_path + ".json"   
+        "podcasts-audio/",
+        relative_file_path + ".ogg"   
     )
     
     return transcript_path, audio_path
