@@ -78,7 +78,8 @@ def get_podcast_dataset(shuffle_buffer=1000, max_length=None):
     def _parse_example(paths):
         audio = tfio.audio.AudioIOTensor(paths[1], dtype=tf.float32)
         audio = audio[:max_length] if max_length else audio
-        return {"audio": audio / float(tf.int16.max)}
+        audio = tf.unstack(audio, num=2, axis=1)
+        return {"audio": audio[0] / float(tf.int16.max)}  # Just use the first channel for no
 
     # Get the list of (transcript, audio) paths for each episode
     metadata = load_metadata()

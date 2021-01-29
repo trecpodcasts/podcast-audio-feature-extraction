@@ -2,7 +2,7 @@ data_path: /unix/cdtdisspotify/data/spotify-podcasts-2020
 training_mode: self_supervised
 experiment_id: "test"
 model_path: model
-ssl_dataset: crema_d
+ssl_dataset: podcasts
 ds_dataset: crema_d
 ssl_checkpoint: None
 batch_size: 64

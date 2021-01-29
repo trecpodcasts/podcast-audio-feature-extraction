@@ -52,7 +52,10 @@ class ContrastiveModel:
 
     def _get_ssl_task_data(self):
         """Prepares a dataset for contrastive self-supervised task."""
-        ds = data.get_self_supervised_data(self._ssl_dataset).repeat()
+        if self._ssl_dataset == "podcasts":
+            ds = data.get_podcast_dataset(max_length=100000).repeat()
+        else:
+            ds = data.get_self_supervised_data(self._ssl_dataset).repeat()
         ds = ds.shuffle(self._shuffle_buffer, reshuffle_each_iteration=True)
         ds = ds.map(
             self._prepare_example, num_parallel_calls=tf.data.experimental.AUTOTUNE
