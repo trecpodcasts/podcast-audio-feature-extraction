@@ -2,6 +2,7 @@
 
 """Self-supervised model for contrastive learning task."""
 
+from json.decoder import JSONDecodeError
 import os
 
 import tensorflow as tf
@@ -35,33 +36,16 @@ class ContrastiveModel:
         self._n_channels = cfg.n_channels
         self._input_shape = (-1, None, self._n_bands, self._n_channels)
 
-    def _prepare_example(self, example):
-        """Creates an example (anchor-positive) for instance discrimination."""
-        x = tf.math.l2_normalize(example["audio"], epsilon=1e-9)
-
-        waveform_a = data.random_segment(x)
-        mels_a = data.extract_log_mel_spectrogram(waveform_a)
-        frames_anchors = mels_a[Ellipsis, tf.newaxis]
-
-        waveform_p = data.random_segment(x)
-        waveform_p = waveform_p + (self._noise * tf.random.normal(tf.shape(waveform_p)))
-        mels_p = data.extract_log_mel_spectrogram(waveform_p)
-        frames_positives = mels_p[Ellipsis, tf.newaxis]
-
-        return frames_anchors, frames_positives
-
     def _get_ssl_task_data(self):
         """Prepares a dataset for contrastive self-supervised task."""
         if self._ssl_dataset == "podcasts":
-            ds = data.get_podcast_dataset(max_length=100000).repeat()
+            ds = data.get_podcast_dataset(
+                method="sequential", data_path="/mnt/storage/cdtdisspotify/raw/"
+            ).repeat()
         else:
-            ds = data.get_self_supervised_data(self._ssl_dataset).repeat()
-        ds = ds.shuffle(self._shuffle_buffer, reshuffle_each_iteration=True)
-        ds = ds.map(
-            self._prepare_example, num_parallel_calls=tf.data.experimental.AUTOTUNE
-        )
+            ds = data.get_tfds_dataset(self._ssl_dataset).repeat()
         ds = ds.batch(self._batch_size, drop_remainder=True)
-        ds = ds.prefetch(tf.data.experimental.AUTOTUNE)
+        ds = ds.prefetch(tf.data.AUTOTUNE)
         return ds
 
     def train(self):

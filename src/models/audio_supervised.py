@@ -64,19 +64,19 @@ class SupervisedModule:
         train_data = (
             train_data.map(
                 functools.partial(self._prepare_standard_example, is_training=True),
-                num_parallel_calls=tf.data.experimental.AUTOTUNE,
+                num_parallel_calls=tf.data.AUTOTUNE,
             )
             .batch(self._batch_size)
-            .prefetch(tf.data.experimental.AUTOTUNE)
+            .prefetch(tf.data.AUTOTUNE)
         )
 
         test_data = (
             test_data.map(
                 functools.partial(self._prepare_standard_example, is_training=False),
-                num_parallel_calls=tf.data.experimental.AUTOTUNE,
+                num_parallel_calls=tf.data.AUTOTUNE,
             )
             .batch(1)
-            .prefetch(tf.data.experimental.AUTOTUNE)
+            .prefetch(tf.data.AUTOTUNE)
         )
 
         return train_data, test_data
