@@ -13,7 +13,7 @@ __all__ = [
     "random_sample",
     "parse_raw_audio",
     "extract_log_mel",
-    "extract_functionals"
+    "extract_functionals",
 ]
 
 
@@ -48,7 +48,7 @@ def load_metadata():
 
 def find_file_paths(show_filename_prefix, episode_filename_prefix):
     """Get the transcript and audio paths from show and episode prefix.
-    
+
     Args:
         show_filename_prefix: As given in metadata-*.tsv
         episode_filename_prefix: As given in metadata-*.tsv
@@ -113,7 +113,7 @@ def get_podcast_dataset(
     shuffle_buffer=1000,
     data_path=None,
     feature="log_mel",
-    positive_noise=None
+    positive_noise=None,
 ):
     """Gets the Spotify podcast audio data as a tf.dataset.
 
@@ -125,6 +125,7 @@ def get_podcast_dataset(
         feature: Optional; Feature to extract from the raw waveforms.
         positive_noise: Optional; Noise scaling value to use for positive samples.
     """
+
     @tf.function
     def _parse_singular(file_path):
         """Parse a file to a single sample."""
@@ -137,11 +138,13 @@ def get_podcast_dataset(
     def _parse_sequential(file_path):
         """Parse a file to a sequential pair of samples."""
         lazy = tfio.audio.AudioIOTensor(file_path, dtype=tf.float32)
-        sample = random_sample(lazy, lazy.rate, sample_length*2)
+        sample = random_sample(lazy, lazy.rate, sample_length * 2)
         sample = parse_raw_audio(sample, lazy.rate)
         anchor, positive = tf.split(sample, 2, axis=0)
         if positive_noise is not None:
-            positive = positive + (positive_noise * tf.random.normal(tf.shape(positive)))
+            positive = positive + (
+                positive_noise * tf.random.normal(tf.shape(positive))
+            )
         return {"anchor": anchor, "positive": positive}
 
     @tf.function
@@ -153,7 +156,9 @@ def get_podcast_dataset(
         positive = random_sample(lazy, lazy.rate, sample_length)
         positive = parse_raw_audio(positive, lazy.rate)
         if positive_noise is not None:
-            positive = positive + (positive_noise * tf.random.normal(tf.shape(positive)))
+            positive = positive + (
+                positive_noise * tf.random.normal(tf.shape(positive))
+            )
         return {"anchor": anchor, "positive": positive}
 
     @tf.function
@@ -212,7 +217,9 @@ def get_podcast_dataset(
     elif method == "full":
         ds = ds.map(_parse_full, num_parallel_calls=1)
     else:
-        raise ValueError("Method arguement needs to be ['singular', 'sequential', 'random']")
+        raise ValueError(
+            "Method arguement needs to be ['singular', 'sequential', 'random']"
+        )
 
     # Extract audio features from the raw audio if required and return dataset
     # We can not parallelise for functionals or everything breaks, hence num_parallel_calls=1
@@ -223,18 +230,18 @@ def get_podcast_dataset(
     return ds
 
 
-def get_tfds_dataset(    
-    name, 
+def get_tfds_dataset(
+    name,
     sr,
     method,
-    sample_length=1, 
-    shuffle_buffer=1000, 
-    feature="log_mel", 
+    sample_length=1,
+    shuffle_buffer=1000,
+    feature="log_mel",
     split="train",
-    positive_noise=None
+    positive_noise=None,
 ):
     """Gets a TFDS audio dataset as a tf.dataset.
-    
+
     Args:
         name: Name of the tf dataset to use
         sr: Sample rate of the tf dataset
@@ -245,6 +252,7 @@ def get_tfds_dataset(
         split: Optional; Which tf dataset split to return.
         positive_noise: Optional; Noise scaling value to use for positive samples.
     """
+
     @tf.function
     def _parse_singular(y, label):
         """Parse the audio to a single sample."""
@@ -255,11 +263,13 @@ def get_tfds_dataset(
     @tf.function
     def _parse_sequential(y, label):
         """Parse the audio to a sequential pair of samples."""
-        sample = random_sample(y, sr, sample_length*2, input_type="tfds")
+        sample = random_sample(y, sr, sample_length * 2, input_type="tfds")
         sample = parse_raw_audio(sample, sr)
         anchor, positive = tf.split(sample, 2, axis=0)
         if positive_noise is not None:
-            positive = positive + (positive_noise * tf.random.normal(tf.shape(positive)))
+            positive = positive + (
+                positive_noise * tf.random.normal(tf.shape(positive))
+            )
         return {"anchor": anchor, "positive": positive, "label": label}
 
     @tf.function
@@ -270,7 +280,9 @@ def get_tfds_dataset(
         positive = random_sample(y, sr, sample_length, input_type="tfds")
         positive = parse_raw_audio(positive, sr)
         if positive_noise is not None:
-            positive = positive + (positive_noise * tf.random.normal(tf.shape(positive)))
+            positive = positive + (
+                positive_noise * tf.random.normal(tf.shape(positive))
+            )
         return {"anchor": anchor, "positive": positive, "label": label}
 
     @tf.function
@@ -324,7 +336,9 @@ def get_tfds_dataset(
     elif method == "full":
         ds = ds.map(_parse_full, num_parallel_calls=tf.data.AUTOTUNE)
     else:
-        raise ValueError("Method arguement needs to be ['singular', 'sequential', 'random']")
+        raise ValueError(
+            "Method arguement needs to be ['singular', 'sequential', 'random']"
+        )
 
     # Extract audio features from the raw audio if required and return dataset
     # We can not parallelise for functionals or everything breaks, hence num_parallel_calls=1
@@ -358,7 +372,9 @@ def random_sample(y, sr, sample_length, input_type="lazy"):
             y = y[:]
         else:
             y = tf.expand_dims(y, axis=1)
-        return tf.pad(y, [[0, tf.math.abs(rand_max)], [0, 0]], 'CONSTANT', constant_values=0)
+        return tf.pad(
+            y, [[0, tf.math.abs(rand_max)], [0, 0]], "CONSTANT", constant_values=0
+        )
 
 
 @tf.function
@@ -371,15 +387,15 @@ def parse_raw_audio(y, sr, frame_length=None):
         frame_length: Optional; Length of frames in seconds to split sample into.
     """
     # Cast to float32 and scale to [-1,1]
-    y = tf.cast(y, tf.float32) / float(tf.int16.max)  
-    
+    y = tf.cast(y, tf.float32) / float(tf.int16.max)
+
     # Convert to mono if it is stereo
-    if len(tf.shape(y)) != 1:  
+    if len(tf.shape(y)) != 1:
         y = tf.math.reduce_mean(y, axis=1)
 
     # Resample to 16000 Hz
     sr = tf.cast(sr, dtype=tf.int64)
-    y = tfio.audio.resample(y, sr, SAMPLE_RATE)  
+    y = tfio.audio.resample(y, sr, SAMPLE_RATE)
 
     # Split into 'frame_length' long frames if required
     if frame_length:
@@ -387,11 +403,11 @@ def parse_raw_audio(y, sr, frame_length=None):
             y,
             frame_length=tf.cast(SAMPLE_RATE * frame_length, tf.int32),
             frame_step=tf.cast(SAMPLE_RATE * frame_length, tf.int32),
-            pad_end=True
+            pad_end=True,
         )
 
     # Apply L2 norm and return parsed audio waveform
-    y = tf.math.l2_normalize(y, axis=-1, epsilon=1e-9)  
+    y = tf.math.l2_normalize(y, axis=-1, epsilon=1e-9)
     return y
 
 
@@ -399,8 +415,8 @@ def parse_raw_audio(y, sr, frame_length=None):
 def extract_log_mel(
     y,
     sr=SAMPLE_RATE,
-    frame_length=int(SAMPLE_RATE*0.025), # 25 ms
-    frame_step=int(SAMPLE_RATE*0.01), # 10 ms
+    frame_length=int(SAMPLE_RATE * 0.025),  # 25 ms
+    frame_step=int(SAMPLE_RATE * 0.01),  # 10 ms
     fft_length=1024,
     n_mels=64,
     fmin=60.0,

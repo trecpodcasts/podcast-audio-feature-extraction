@@ -27,7 +27,7 @@ class SupervisedModel:
             sample_length=cfg.data_sample_length,
             shuffle_buffer=cfg.data_shuffle_buffer,
             feature=cfg.data_feature,
-            split=cfg.data_train_split
+            split=cfg.data_train_split,
         )
         self.train_ds = self.train_ds.batch(cfg.data_batch_size, drop_remainder=True)
         self.train_ds = self.train_ds.prefetch(tf.data.AUTOTUNE)
@@ -39,18 +39,20 @@ class SupervisedModel:
             sample_length=cfg.data_sample_length,
             shuffle_buffer=cfg.data_shuffle_buffer,
             feature=cfg.data_feature,
-            split=cfg.data_test_split
+            split=cfg.data_test_split,
         )
         self.test_ds = self.test_ds.batch(1, drop_remainder=True)
         self.test_ds = self.test_ds.prefetch(tf.data.AUTOTUNE)
 
         if cfg.load_pretrained:
-            ckpt_path = os.path.join(cfg.pretrained_path, "./model", cfg.pretrained_ckpt)
+            ckpt_path = os.path.join(
+                cfg.pretrained_path, "./model", cfg.pretrained_ckpt
+            )
             pretrained_model = models.get_contrastive_network(
                 embedding_dim=cfg.contrastive_embedding_dim,
                 temperature=cfg.contrastive_temperature,
                 pooling_type=cfg.contrastive_pooling_type,
-                similarity_type=cfg.contrastive_similarity_type
+                similarity_type=cfg.contrastive_similarity_type,
             )
             pretrained_model.compile(
                 optimizer=tf.keras.optimizers.Adam(cfg.learning_rate),
@@ -60,7 +62,9 @@ class SupervisedModel:
             pretrained_model.load_weights(ckpt_path).expect_partial()
             encoder = pretrained_model.embedding_model.get_layer("encoder")
         else:
-            encoder = models.get_efficient_net_encoder(pooling=cfg.contrastive_pooling_type)
+            encoder = models.get_efficient_net_encoder(
+                pooling=cfg.contrastive_pooling_type
+            )
 
         inputs = tf.keras.layers.Input(shape=(None, 64, 1))
         x = encoder(inputs)
@@ -78,7 +82,6 @@ class SupervisedModel:
         self._epochs = cfg.epochs
         self._learning_rate = cfg.learning_rate
 
-
     def train_eval(self):
         """Trains and evaluates a downstream model in any of the below mentioned modes."""
         backandrestore_callback = tf.keras.callbacks.experimental.BackupAndRestore(
@@ -92,9 +95,7 @@ class SupervisedModel:
             callbacks=[backandrestore_callback],
         )
 
-        time_distributed_input = tf.keras.layers.Input(
-            shape=(None, None, 64, 1)
-        )
+        time_distributed_input = tf.keras.layers.Input(shape=(None, None, 64, 1))
         x = tf.keras.layers.TimeDistributed(self.model)(time_distributed_input)
         time_averaged_output = tf.reduce_mean(x, axis=1)
         time_distributed_model = tf.keras.Model(

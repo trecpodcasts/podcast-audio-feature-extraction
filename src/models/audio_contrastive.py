@@ -17,12 +17,12 @@ class ContrastiveModel:
         # First we create the dataset
         if cfg.data_name == "podcasts":
             self.ds = data.get_podcast_dataset(
-                cfg.data_method, 
+                cfg.data_method,
                 sample_length=cfg.data_sample_length,
                 shuffle_buffer=cfg.data_shuffle_buffer,
                 data_path=cfg.data_path,
                 feature=cfg.data_feature,
-                positive_noise=cfg.data_positive_noise
+                positive_noise=cfg.data_positive_noise,
             ).repeat()
         else:
             self.ds, _ = data.get_tfds_dataset(
@@ -33,11 +33,13 @@ class ContrastiveModel:
                 shuffle_buffer=cfg.data_shuffle_buffer,
                 feature=cfg.data_feature,
                 split=cfg.data_split,
-                positive_noise=cfg.data_positive_noise
+                positive_noise=cfg.data_positive_noise,
             )
         self.ds = self.ds.batch(cfg.data_batch_size, drop_remainder=True)
         self.ds = self.ds.prefetch(tf.data.AUTOTUNE)
-        self.ds = strategy.experimental_distribute_dataset(self.ds)  #TODO: Check what this does
+        self.ds = strategy.experimental_distribute_dataset(
+            self.ds
+        )  # TODO: Check what this does
 
         # Now we create the contrastive model
         with strategy.scope():
@@ -75,5 +77,5 @@ class ContrastiveModel:
                 model_checkpoint_callback,
                 backandrestore_callback,
                 tensorboard_callback,
-            ]
+            ],
         )
