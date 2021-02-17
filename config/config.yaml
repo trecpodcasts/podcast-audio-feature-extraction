@@ -1,21 +1,5 @@
-data_path: /unix/cdtdisspotify/data/spotify-podcasts-2020
-training_mode: self_supervised
-experiment_id: test
-model_path: model
-ssl_dataset: podcasts
-ds_dataset: crema_d
-ssl_checkpoint: None
-batch_size: 256
-learning_rate: 0.001
-epochs: 100
-embedding_dim: 512
-temperature: 0.2
-pooling_type: max
-noise: 0.001
-steps_per_epoch: 20
-shuffle_buffer: 1000
-n_frames: 98
-n_bands: 64
-n_channels: 1
-similarity_type: bilinear
-freeze_encoded: True
+defaults:
+  - type: contrastive
+hydra:
+  run:
+    dir: ./outputs/test

@@ -70,7 +70,7 @@ class BaseContrastiveModel(tf.keras.Model):
         return {m.name: m.result() for m in self.metrics}
 
 
-def get_efficient_net_encoder(input_shape, pooling):
+def get_efficient_net_encoder(input_shape=(None, 64, 1), pooling="max"):
     """Wrapper function for efficient net B0."""
     efficient_net = tf.keras.applications.EfficientNetB0(
         include_top=False, weights=None, input_shape=input_shape, pooling=pooling

@@ -113,6 +113,7 @@ def get_podcast_dataset(
     shuffle_buffer=1000,
     data_path=None,
     feature="log_mel",
+    positive_noise=None
 ):
     """Gets the Spotify podcast audio data as a tf.dataset.
 
@@ -122,6 +123,7 @@ def get_podcast_dataset(
         shuffle_buffer: Optional; Size of dataset shuffle buffer.
         data_path: Optional; Path to data directory to use instead.
         feature: Optional; Feature to extract from the raw waveforms.
+        positive_noise: Optional; Noise scaling value to use for positive samples.
     """
     @tf.function
     def _parse_singular(file_path):
@@ -138,6 +140,8 @@ def get_podcast_dataset(
         sample = random_sample(lazy, lazy.rate, sample_length*2)
         sample = parse_raw_audio(sample, lazy.rate)
         anchor, positive = tf.split(sample, 2, axis=0)
+        if positive_noise is not None:
+            positive = positive + (positive_noise * tf.random.normal(tf.shape(positive)))
         return {"anchor": anchor, "positive": positive}
 
     @tf.function
@@ -148,6 +152,8 @@ def get_podcast_dataset(
         anchor = parse_raw_audio(anchor, lazy.rate)
         positive = random_sample(lazy, lazy.rate, sample_length)
         positive = parse_raw_audio(positive, lazy.rate)
+        if positive_noise is not None:
+            positive = positive + (positive_noise * tf.random.normal(tf.shape(positive)))
         return {"anchor": anchor, "positive": positive}
 
     @tf.function
@@ -224,7 +230,8 @@ def get_tfds_dataset(
     sample_length=1, 
     shuffle_buffer=1000, 
     feature="log_mel", 
-    split="train"
+    split="train",
+    positive_noise=None
 ):
     """Gets a TFDS audio dataset as a tf.dataset.
     
@@ -236,6 +243,7 @@ def get_tfds_dataset(
         shuffle_buffer: Optional; Size of dataset shuffle buffer.
         feature: Optional; Feature to extract from the raw waveforms.
         split: Optional; Which tf dataset split to return.
+        positive_noise: Optional; Noise scaling value to use for positive samples.
     """
     @tf.function
     def _parse_singular(y, label):
@@ -250,6 +258,8 @@ def get_tfds_dataset(
         sample = random_sample(y, sr, sample_length*2, input_type="tfds")
         sample = parse_raw_audio(sample, sr)
         anchor, positive = tf.split(sample, 2, axis=0)
+        if positive_noise is not None:
+            positive = positive + (positive_noise * tf.random.normal(tf.shape(positive)))
         return {"anchor": anchor, "positive": positive, "label": label}
 
     @tf.function
@@ -259,6 +269,8 @@ def get_tfds_dataset(
         anchor = parse_raw_audio(anchor, sr)
         positive = random_sample(y, sr, sample_length, input_type="tfds")
         positive = parse_raw_audio(positive, sr)
+        if positive_noise is not None:
+            positive = positive + (positive_noise * tf.random.normal(tf.shape(positive)))
         return {"anchor": anchor, "positive": positive, "label": label}
 
     @tf.function

@@ -38,17 +38,14 @@ def main(cfg: DictConfig) -> None:
     """
     setup_gpus()  # Setup the GPUs
     strategy = tf.distribute.MirroredStrategy()
-    if cfg.training_mode == "self_supervised":
-        log.info("Running self-supervised contrastive learning...")
+    if cfg.name == "contrastive":
         model = models.ContrastiveModel(strategy, cfg)
         model.train()
-    elif cfg.training_mode == "supervised":
-        log.info("Running fully supervised learning...")
-        model = models.SupervisedModule(strategy, cfg)
-        model.train_eval(load_pretrained=False, freeze_encoder=False)     
-    elif cfg.training_mode == "downstream":
-        log.info("Running downstream finetuning on self-supervised model...")
-        model = models.SupervisedModule(strategy, cfg)
+    elif cfg.name == "supervised":
+        model = models.SupervisedModel(strategy, cfg)
+        model.train_eval()     
+    elif cfg.name == "finetune":
+        model = models.SupervisedModel(strategy, cfg)
         model.train_eval()
     else:
         raise ValueError("Unknown training mode.")
