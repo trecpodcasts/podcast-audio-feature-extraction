@@ -11,19 +11,19 @@ ssh [username]@gpu01  # Can be either gpu01, gpu02, or gpu03
 
 Each GPU machine has access to a local storage area (a physical disk on the machine) at /mnt/storage which may be needed for training data if loading it over the UCL HEP network from /unix/cdtdisspotify takes too long. But for now, it is probably best to work from a personal directory (which can be created) within /unix/cdtdisspotify.
 
-A basic [Conda](https://docs.conda.io/en/latest/) environment (called podcast-dataset) containing all the currently required packages (as defined in "environment.yaml") is already installed and ready to use at "/unix/cdtdisspotify/env". To use this environment it must be activated using...
+A basic [Conda](https://docs.conda.io/en/latest/) environment (called podcasts) containing all the currently required packages (as defined in "environment.yaml") is already installed and ready to use at "/unix/cdtdisspotify/env". To use this environment it must be activated using...
 
 ```bash
 source /unix/cdtdisspotify/cuda_setup.sh
 source /unix/cdtdisspotify/env/bin/activate
-conda activate podcast-dataset
+conda activate podcasts
 ```
 
-The "cuda_setup.sh" script is required to set up the correct [CUDA](https://developer.nvidia.com/CUDA-zone) driver version to be able to use GPUs with Tensorflow on the UCL GPU machines. For testing its probably best to create a personal copy of this environment in your directory so you can add other packages. With the podcast-dataset environment activated, this can be created and then activated using...
+The "cuda_setup.sh" script is required to set up the correct [CUDA](https://developer.nvidia.com/CUDA-zone) driver version to be able to use GPUs with Tensorflow on the UCL GPU machines. For testing its probably best to create a personal copy of this environment in your directory so you can add other packages. With the podcasts environment activated, this can be created and then activated using...
 
 ```bash
-conda create --prefix /unix/cdtdisspotify/[username]/my-environment --clone podcast-dataset
-conda activate /unix/cdtdisspotify/[username]/my-environment 
+conda create --prefix /unix/cdtdisspotify/[username]/my-podcasts --clone podcasts
+conda activate /unix/cdtdisspotify/[username]/my-podcasts 
 ```
 
 For all subsequent logins to the GPU machine, you can then activate your environment using...
@@ -31,7 +31,7 @@ For all subsequent logins to the GPU machine, you can then activate your environ
 ```bash
 source /unix/cdtdisspotify/cuda_setup.sh
 source /unix/cdtdisspotify/env/bin/activate
-conda activate /unix/cdtdisspotify/[username]/my-environment 
+conda activate /unix/cdtdisspotify/[username]/my-podcasts 
 ```
 
 Most python packages can be installed with Conda using...
@@ -88,7 +88,7 @@ which also installs all required packages for your code to run.
 
 ## Using Jupyter Remotely
 
-For exploratory work, using a Python Jupyter notebook is probably easiest. As we are running everything on a remote machine this is made slightly more difficult as you need to forward the port that Jupyter runs on. Also as multiple people sometimes use the machines Jupyter can start on different ports. The best thing to do is to add the following entry to your local ~/.ssh/config file, with [chosen_port] being a random port you choose. It's probably best to choose one in the 8890-9010 range as these are common Jupyter ports.
+For exploratory work, using a Python Jupyter notebook is probably easiest. As we are running everything on a remote machine this is made slightly more difficult as you need to forward the port that Jupyter runs on. Also as multiple people sometimes use the machines Jupyter can start on different ports. The best thing to do is to add the following entry to your local ~/.ssh/config file, with [chosen_port] being a random port you choose. It's probably best to choose one in the 8890-9010 range as these are common Jupyter ports. Note that this will only work from a linux machine (for windows use [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10))
 
 ```
 Host gpu01
@@ -96,9 +96,18 @@ Host gpu01
     User [username]
     ProxyJump [username]@plus1.hep.ucl.ac.uk
     LocalForward [chosen_port] 127.0.0.1:[chosen_port]
-    ForwardX11 yes
-    ForwardX11Trusted yes
     ForwardAgent yes
+```
+
+The corresponding entry for Mac machines is ...
+
+```
+Host gpu01
+    HostName gpu01
+    User [username]
+    ProxyJump [username]@plus1.hep.ucl.ac.uk
+    LocalForward [chosen_port] 127.0.0.1:[chosen_port]
+    UseKeychain yes
 ```
 
 This then allows you to ssh directly into the GPU machine (skipping the plus1 machine) and forward a port that can then be used for Jupyter. To login from your local machine, activate your Conda environment, and open Jupyter-lab the following commands are used...
@@ -106,7 +115,7 @@ This then allows you to ssh directly into the GPU machine (skipping the plus1 ma
 ```bash
 ssh gpu01
 source /unix/cdtdisspotify/env/bin/activate
-conda activate /unix/cdtdisspotify/[username]/my-environment
+conda activate /unix/cdtdisspotify/[username]/my-podcasts
 cd /unix/cdtdisspotify/[username]
 jupyter-lab --port [chosen_port]
 ```

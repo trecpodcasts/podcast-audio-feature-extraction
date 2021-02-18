@@ -1,1 +1,5 @@
-data_path: /unix/cdtdisspotify/data/spotify-podcasts-2020
+defaults:
+  - type: contrastive
+hydra:
+  run:
+    dir: ./outputs/test
