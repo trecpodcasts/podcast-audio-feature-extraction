@@ -37,7 +37,7 @@ TFDS_PATH = "/mnt/storage/cdtdisspotify/tensorflow_datasets/"
 SAMPLE_RATE = 16000
 SMILE = opensmile.Smile(  # Create the functionals extractor here
     feature_set=opensmile.FeatureSet.eGeMAPSv02,
-    feature_level=opensmile.FeatureLevel.Functionals,
+    feature_level=opensmile.FeatureLevel.Functionals
 )
 
 
@@ -130,7 +130,7 @@ def get_podcast_dataset(
     def _parse_singular(file_path):
         """Parse a file to a single sample."""
         lazy = tfio.audio.AudioIOTensor(file_path, dtype=tf.float32)
-        anchor = random_sample(lazy, lazy.rate, sample_length)
+        anchor = random_sample(lazy, lazy.rate, sample_length, input_type="lazy")
         anchor = parse_raw_audio(anchor, lazy.rate)
         return {"anchor": anchor}
 
@@ -138,7 +138,7 @@ def get_podcast_dataset(
     def _parse_sequential(file_path):
         """Parse a file to a sequential pair of samples."""
         lazy = tfio.audio.AudioIOTensor(file_path, dtype=tf.float32)
-        sample = random_sample(lazy, lazy.rate, sample_length * 2)
+        sample = random_sample(lazy, lazy.rate, sample_length * 2, input_type="lazy")
         sample = parse_raw_audio(sample, lazy.rate)
         anchor, positive = tf.split(sample, 2, axis=0)
         if positive_noise is not None:
@@ -151,9 +151,9 @@ def get_podcast_dataset(
     def _parse_random(file_path):
         """Parse a file to a random pair of samples."""
         lazy = tfio.audio.AudioIOTensor(file_path, dtype=tf.float32)
-        anchor = random_sample(lazy, lazy.rate, sample_length)
+        anchor = random_sample(lazy, lazy.rate, sample_length, input_type="lazy")
         anchor = parse_raw_audio(anchor, lazy.rate)
-        positive = random_sample(lazy, lazy.rate, sample_length)
+        positive = random_sample(lazy, lazy.rate, sample_length, input_type="lazy")
         positive = parse_raw_audio(positive, lazy.rate)
         if positive_noise is not None:
             positive = positive + (
@@ -239,6 +239,7 @@ def get_tfds_dataset(
     feature="log_mel",
     split="train",
     positive_noise=None,
+    silence_epsilon=0.002
 ):
     """Gets a TFDS audio dataset as a tf.dataset.
 
@@ -251,20 +252,25 @@ def get_tfds_dataset(
         feature: Optional; Feature to extract from the raw waveforms.
         split: Optional; Which tf dataset split to return.
         positive_noise: Optional; Noise scaling value to use for positive samples.
+        silence_epsilon: Optional; Max value to be considered as noise when trimming silence.
     """
 
     @tf.function
     def _parse_singular(y, label):
         """Parse the audio to a single sample."""
-        anchor = random_sample(y, sr, sample_length, input_type="tfds")
-        anchor = parse_raw_audio(anchor, sr)
+        y = parse_raw_audio(y, sr)
+        if silence_epsilon:
+            y = trim_silence(y, silence_epsilon, SAMPLE_RATE*sample_length)
+        anchor = random_sample(y, SAMPLE_RATE, sample_length, input_type="tfds")
         return {"anchor": anchor, "label": label}
 
     @tf.function
     def _parse_sequential(y, label):
         """Parse the audio to a sequential pair of samples."""
-        sample = random_sample(y, sr, sample_length * 2, input_type="tfds")
-        sample = parse_raw_audio(sample, sr)
+        y = parse_raw_audio(y, sr)
+        if silence_epsilon:
+            y = trim_silence(y, silence_epsilon, SAMPLE_RATE*sample_length)
+        sample = random_sample(y, SAMPLE_RATE, sample_length * 2, input_type="tfds")
         anchor, positive = tf.split(sample, 2, axis=0)
         if positive_noise is not None:
             positive = positive + (
@@ -275,10 +281,11 @@ def get_tfds_dataset(
     @tf.function
     def _parse_random(y, label):
         """Parse the audio to a random pair of samples."""
-        anchor = random_sample(y, sr, sample_length, input_type="tfds")
-        anchor = parse_raw_audio(anchor, sr)
-        positive = random_sample(y, sr, sample_length, input_type="tfds")
-        positive = parse_raw_audio(positive, sr)
+        y = parse_raw_audio(y, sr)
+        if silence_epsilon:
+            y = trim_silence(y, silence_epsilon, SAMPLE_RATE*sample_length)
+        anchor = random_sample(y, SAMPLE_RATE, sample_length, input_type="tfds")
+        positive = random_sample(y, SAMPLE_RATE, sample_length, input_type="tfds")
         if positive_noise is not None:
             positive = positive + (
                 positive_noise * tf.random.normal(tf.shape(positive))
@@ -288,6 +295,9 @@ def get_tfds_dataset(
     @tf.function
     def _parse_full(y, label):
         """Parse the audio to a sequence of frames of sample_length."""
+        y = parse_raw_audio(y, sr)
+        if silence_epsilon:
+            y = trim_silence(y, silence_epsilon, SAMPLE_RATE*sample_length)
         anchor = parse_raw_audio(y, sr, frame_length=sample_length)
         return {"anchor": anchor, "label": label}
 
@@ -350,6 +360,22 @@ def get_tfds_dataset(
 
 
 @tf.function
+def trim_silence(y, epsilon, min_length):
+    """Trim silence from either end of the audio data.
+
+    Args:
+        y: Raw input audio data.
+        epsilon: The max value to be considered as noise.
+        sample_length: Minimum length of sample to return.
+    """
+    trim_boundary = tfio.experimental.audio.trim(y, axis=0, epsilon=epsilon)
+    if (trim_boundary[1]-trim_boundary[0]) < min_length:
+        return y
+    else:
+        return y[trim_boundary[0]:trim_boundary[1]]
+
+
+@tf.function
 def random_sample(y, sr, sample_length, input_type="lazy"):
     """Get a random sample from the audio data.
 
@@ -398,12 +424,13 @@ def parse_raw_audio(y, sr, frame_length=None):
     y = tfio.audio.resample(y, sr, SAMPLE_RATE)
 
     # Split into 'frame_length' long frames if required
+    # TODO: For evaluation, maybe we want to average over overlapping frames!
     if frame_length:
         y = tf.signal.frame(
             y,
             frame_length=tf.cast(SAMPLE_RATE * frame_length, tf.int32),
             frame_step=tf.cast(SAMPLE_RATE * frame_length, tf.int32),
-            pad_end=True,
+            pad_end=False,
         )
 
     # Apply L2 norm and return parsed audio waveform
