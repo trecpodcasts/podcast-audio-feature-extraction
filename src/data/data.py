@@ -5,19 +5,20 @@
 __all__ = [
     "load_metadata",
     "find_file_paths",
+    "find_paths",
     "find_file_paths_features",
     "load_transcript",
     "retrieve_full_transcript",
     "retrieve_timestamped_transcript",
-    "get_podcast_dataset",
-    "get_tfds_dataset",
-    "random_sample",
-    "parse_raw_audio",
-    "extract_log_mel",
-    "extract_functionals",
+    # "get_podcast_dataset",
+    # "get_tfds_dataset",
+    # "random_sample",
+    # "parse_raw_audio",
+    # "extract_log_mel",
+    # "extract_functionals",
 ]
 
-# TODO: Be able to load transcripts aswell, maybe want to use huggingface tokeniser on the text first
+# TODO: Be able to load transcripts as well, maybe want to use huggingface tokeniser on the text first
 # TODO: Probably want to be able to load the other metadata we have into a dataset as well
 
 import json
@@ -27,8 +28,8 @@ import numpy as np
 
 import opensmile
 import tensorflow as tf
-import tensorflow_io as tfio
-import tensorflow_datasets as tfds
+# import tensorflow_io as tfio
+# import tensorflow_datasets as tfds
 
 
 DATA_PATH = "/unix/cdtdisspotify/data/spotify-podcasts-2020/"
@@ -36,7 +37,7 @@ TFDS_PATH = "/mnt/storage/cdtdisspotify/tensorflow_datasets/"
 DATA_PATH_GPU02 = "/mnt/storage/cdtdisspotify/eGeMAPSv01b/intermediate/"
 SAMPLE_RATE = 16000
 SMILE = opensmile.Smile(  # Create the functionals extractor here
-    feature_set=opensmile.FeatureSet.eGeMAPSv02,
+    feature_set=opensmile.FeatureSet.eGeMAPSv01b, # TODO set this to v02
     feature_level=opensmile.FeatureLevel.Functionals
 )
 
@@ -56,6 +57,30 @@ def relative_file_path(show_filename_prefix, episode_filename_prefix):
         episode_filename_prefix
     )
 
+
+def find_paths(metadata, base_folder, file_extension):
+    """Finds the filepath based on the dataset structure based on the metadata, the folder where it is stored and the file extension you want.
+
+    Args:
+        metadata (df): The metadata of the files you want to create a path for
+        base_folder (str): base directory for where data is (to be) stored
+        file_extension (str): extension of the file in the path
+
+    Returns:
+        paths (list): list of paths (str) for all files in the given metadata
+    """
+
+    paths = []
+    for i in range(len(metadata)):
+        relative_path = relative_file_path( 
+            metadata.show_filename_prefix.iloc[i], 
+            metadata.episode_filename_prefix.iloc[i] )
+        path = os.path.join(
+            base_folder,
+            relative_path + file_extension
+        )
+        paths.append(path)
+    return paths
 
 def find_file_paths(show_filename_prefix, episode_filename_prefix):
     """Get the transcript and audio paths from show and episode prefix.

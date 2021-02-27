@@ -1,1 +1,3 @@
-from .features import *
+from .FeatureExtractor import FeatureExtractor
+from .OpenSmileExtractor import OpenSmileExtractor
+from .VGGishExtractor import VGGishExtractor
