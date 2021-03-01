@@ -3,6 +3,7 @@ __all__ = ["FeatureExtractor"]
 import os
 import multiprocessing
 
+from tqdm import tqdm
 
 class FeatureExtractor():
     """
@@ -29,9 +30,8 @@ class FeatureExtractor():
             function (function): the function to multiprocess
             iterable (iterable): iterable to be given to function
 
-        TODO add progress bar
         """
-        for i in iterable:
+        for i in tqdm(iterable):
             function(i)
 
     @staticmethod

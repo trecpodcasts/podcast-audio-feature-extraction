@@ -16,13 +16,13 @@ import vggish_input
 import vggish_slim
 import vggish_params
 import vggish_postprocess
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+
 
 
 class VGGishExtractor(FeatureExtractor):
     def __init__(self, ):
-
+        import tensorflow.compat.v1 as tf # only tf.v1 in this function
+        tf.disable_v2_behavior()
         self.model_checkpoint = os.path.join(VGGISH_PATH, "vggish_model.ckpt")
         self.pca_parameters = os.path.join(VGGISH_PATH, "vggish_pca_params.npz")
 

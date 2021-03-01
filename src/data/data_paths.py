@@ -5,7 +5,9 @@ __all__ = [
     "DATA_OPENSMILE_FUNCTIONALS_1s",
     "DATA_VGGISH_LOG_MEL",
     "DATA_VGGISH_EMBED",
-    "DATA_VGGISH_POSTPROCESSED"
+    "DATA_VGGISH_POSTPROCESSED",
+    "DATA_YAMNET_EMBED",
+    "DATA_YAMNET_SCORES"
 ]
 
 # raw data
@@ -19,3 +21,7 @@ DATA_OPENSMILE_FUNCTIONALS_1s = "/mnt/storage/cdtdisspotify/eGeMAPSv01b/intermed
 DATA_VGGISH_LOG_MEL = "/mnt/storage/cdtdisspotify/vggish/intermediate_uri/log_mel/"
 DATA_VGGISH_EMBED = "/mnt/storage/cdtdisspotify/vggish/intermediate_uri/embedding/"
 DATA_VGGISH_POSTPROCESSED = "/mnt/storage/cdtdisspotify/vggish/intermediate_uri/postprocess/"
+
+# YAMNet features
+DATA_YAMNET_EMBED = "/mnt/storage/cdtdisspotify/yamnet/intermediate_uri/embedding/"
+DATA_YAMNET_SCORES = "/mnt/storage/cdtdisspotify/yamnet/intermediate_uri/scores/"

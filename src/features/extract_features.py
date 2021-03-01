@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 
 from src.data import load_metadata, find_paths
-from src.data import DATA_AUDIO, DATA_OPENSMILE_FUNCTIONALS_1s, DATA_VGGISH_LOG_MEL, DATA_VGGISH_EMBED, DATA_VGGISH_POSTPROCESSED
+from src.data import DATA_AUDIO, DATA_OPENSMILE_FUNCTIONALS_1s, DATA_VGGISH_LOG_MEL, DATA_VGGISH_EMBED, DATA_VGGISH_POSTPROCESSED, DATA_YAMNET_EMBED, DATA_YAMNET_SCORES
 
 
 
@@ -56,6 +56,16 @@ def combine_vggish_features(metadata, base_dir, output_file="./result.pkl"):
     with open(output_file, "wb") as file:
         pickle.dump(data, file)
 
+def run_yamnet(metadata):
+    from src.features import YAMNetExtractor
+    
+    input_paths = find_paths(metadata, DATA_AUDIO, ".ogg")
+    embed_paths = find_paths(metadata, DATA_YAMNET_EMBED, ".pkl")
+    output_paths = find_paths(metadata, DATA_YAMNET_SCORES, ".pkl")
+
+    ex = YAMNetExtractor()
+    ex.embedding(input_paths, output_paths, embed_paths) # also save embeddings
+
 
 metadata = load_metadata()
 uri_list = np.loadtxt("./uri_list.txt", dtype=str)
@@ -74,9 +84,13 @@ num_workers=25
 # run_vggish_embed(subset) # gpu accelerated instead of cpu
 # run_vggish_postprocess(subset, num_workers=num_workers)
 
+## YAMNet features
+# run_yamnet(subset)
+
+
 ## combining vgg features in one file
-combine_vggish_features(
-    subset, 
-    DATA_VGGISH_POSTPROCESSED, 
-    "/mnt/storage/cdtdisspotify/results/vgg_postprocessed.pkl"
-    )
+# combine_vggish_features(
+#     subset, 
+#     DATA_VGGISH_POSTPROCESSED, 
+#     "/mnt/storage/cdtdisspotify/results/vgg_postprocessed.pkl"
+#     )
