@@ -9,27 +9,25 @@ ssh [username]@plus1.hep.ucl.ac.uk  # Can be plus2.hep.ucl.ac.uk if you want
 ssh [username]@gpu01  # Can be either gpu01, gpu02, or gpu03
 ```
 
-Each GPU machine has access to a local storage area (a physical disk on the machine) at /mnt/storage which may be needed for training data if loading it over the UCL HEP network from /unix/cdtdisspotify takes too long. But for now, it is probably best to work from a personal directory (which can be created) within /unix/cdtdisspotify.
+Each GPU machine has access to a local storage area (a physical disk on the machine) at /mnt/storage/cdtdisspotify which may be needed for training data if loading it over the UCL HEP network from /unix/cdtdisspotify takes too long. But for now, it is probably best to work from a personal directory (which can be created) within /unix/cdtdisspotify.
 
 A basic [Conda](https://docs.conda.io/en/latest/) environment (called podcasts) containing all the currently required packages (as defined in "environment.yaml") is already installed and ready to use at "/unix/cdtdisspotify/env". To use this environment it must be activated using...
 
 ```bash
-source /unix/cdtdisspotify/cuda_setup.sh
 source /unix/cdtdisspotify/env/bin/activate
 conda activate podcasts
 ```
 
-The "cuda_setup.sh" script is required to set up the correct [CUDA](https://developer.nvidia.com/CUDA-zone) driver version to be able to use GPUs with Tensorflow on the UCL GPU machines. For testing its probably best to create a personal copy of this environment in your directory so you can add other packages. With the podcasts environment activated, this can be created and then activated using...
+For testing its probably best to create a personal copy of this environment in your directory so you can add other packages. With the podcasts environment activated, this can be created and then activated using...
 
 ```bash
 conda create --prefix /unix/cdtdisspotify/[username]/my-podcasts --clone podcasts
-conda activate /unix/cdtdisspotify/[username]/my-podcasts 
+conda activate /unix/cdtdisspotify/[username]/my-podcasts
 ```
 
 For all subsequent logins to the GPU machine, you can then activate your environment using...
 
 ```bash
-source /unix/cdtdisspotify/cuda_setup.sh
 source /unix/cdtdisspotify/env/bin/activate
 conda activate /unix/cdtdisspotify/[username]/my-podcasts 
 ```
@@ -45,6 +43,13 @@ pip install librosa
 ```
 
 A simple python script (run.py) contains the code to setup the GPUs for use with Tensorflow and load a configuration (./config/config.yaml) using [Hydra](https://hydra.cc/) from file.
+
+To install all the python modules within ./src install in developer mode...
+
+```bash
+pip install -e .
+``` 
+The package can be imported using the package `src`. 
 
 ## File structure
 
@@ -71,20 +76,7 @@ To keep things organised we use the following structure for our code. A typical 
 
 ## Installing the software package
 
-Install the software package with
 
-```bash
-pip install -e .
-``` 
-to install the software package in developer mode. The package can be imported using the package `src`. 
-
-Or even better: install using
-
-```bash
-pip install -r requirements.txt
-```
-
-which also installs all required packages for your code to run. 
 
 ## Using Jupyter Remotely
 
