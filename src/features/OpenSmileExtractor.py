@@ -8,19 +8,11 @@ from src.features import FeatureExtractor
 SMILE = opensmile.Smile(  # Create the functionals extractor here
     feature_set=opensmile.FeatureSet.eGeMAPSv02,
     feature_level=opensmile.FeatureLevel.Functionals,
+    options = {"frameModeFunctionalsConf": "./opensmile_config/custom_FrameModeFunctionals.conf.inc"}
 )
 
 class OpenSmileExtractor(FeatureExtractor):
     """Class for feature extraction with opensmile
-
-        The configuration for the OpenSmile extractor needs to be altered in the package. In particular the file: "opensmile/core/config/shared/FrameModeFunctionals.conf.inc"
-        
-        You need to change:
-        frameMode = fixed
-        frameSize = 0.96
-        frameStep = 0.48
-        frameCenterSpecial = left
-
 
         example:
         extractor = OpenSmileExtractor()

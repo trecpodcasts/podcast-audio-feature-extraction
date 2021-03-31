@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.data import load_metadata, find_paths
-from src.data import DATA_AUDIO, DATA_OPENSMILE_FUNCTIONALS,
+from src.data import DATA_AUDIO, DATA_OPENSMILE_FUNCTIONALS
 
 
 ## Change these for your machine:
@@ -9,7 +9,7 @@ from src.data import DATA_AUDIO, DATA_OPENSMILE_FUNCTIONALS,
 # the base folder of the audio data, where you have the folder 0/, .., 7/
 DATA_AUDIO = DATA_AUDIO 
 # the base folder where you want the embedding saved
-DATA_OPENSMILE_FUNCTIONALS = DATA_OPENSMILE_FUNCTIONALS 
+DATA_OPENSMILE_FUNCTIONALS = "./tmp/" # DATA_OPENSMILE_FUNCTIONALS 
 
 
 def run_opensmile(metadata, num_workers=1):
@@ -28,4 +28,4 @@ sel = [uri in uri_list for uri in metadata.episode_uri]
 subset = metadata.iloc[sel]
 num_workers=25
 
-run_opensmile(subset, num_workers=2)
+run_opensmile(subset, num_workers=3)

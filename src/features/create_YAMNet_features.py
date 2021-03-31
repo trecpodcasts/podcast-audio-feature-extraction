@@ -11,7 +11,7 @@ DATA_AUDIO = DATA_AUDIO
 # the base folder where you want the embedding saved
 DATA_YAMNET_EMBED = DATA_YAMNET_EMBED 
 # the base folder where you want the scores saved
-DATA_YAMNET_SCORES = DATA_YAMNET_SCORES
+DATA_YAMNET_SCORES = "./tmp/"#DATA_YAMNET_SCORES
 
 def run_yamnet(metadata):
     from src.features import YAMNetExtractor
@@ -21,7 +21,7 @@ def run_yamnet(metadata):
     output_paths = find_paths(metadata, DATA_YAMNET_SCORES, ".h5")
 
     ex = YAMNetExtractor()
-    ex.embedding(input_paths, output_paths, embed_paths) # also save embeddings
+    ex.embedding(input_paths, output_paths) # also save embeddings
 
 
 metadata = load_metadata()

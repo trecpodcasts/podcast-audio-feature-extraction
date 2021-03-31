@@ -48,11 +48,12 @@ class FeatureExtractor():
 
     @staticmethod
     def _process_wrapper(argument, function=lambda x: x, log="./log"):
-        try: 
-            function(argument)
-        except:
-            with open(log, "a") as f:
-                f.write(f"spotify:episode:{argument[0].split("/")[-1][:-4]}\n") # should produce the uri only
+        function(argument)
+        # try: 
+        #     function(argument)
+        # except:
+        #     with open(log, "a") as f:
+        #         f.write(f"spotify:episode:{argument[0].split("/")[-1][:-4]}\n") # should produce the uri only
   
     @staticmethod
     def feature_path_checker(input_path, output_path):
