@@ -1,5 +1,0 @@
-defaults:
-  - type: contrastive
-hydra:
-  run:
-    dir: ./outputs/test
