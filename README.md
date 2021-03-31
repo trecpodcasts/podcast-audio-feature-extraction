@@ -1,5 +1,16 @@
 # podcast-dataset
 
+## Getting started
+
+You need to first download some additional model/data files and initialise the submodules
+
+```bash
+curl -o data/vggish_model.ckpt https://storage.googleapis.com/audioset/vggish_model.ckpt
+curl -o data/vggish_pca_params.npz https://storage.googleapis.com/audioset/vggish_pca_params.npz
+curl -o data/yamnet.h5 https://storage.googleapis.com/audioset/yamnet.h5
+git submodule update --init --recursive
+```
+
 ## Usage
 
 It is best to use the UCL HEP GPU machines for all work as they are powerful and come equipped with multiple GPUs to dramatically speed up certain computations. To use one of the GPU machines you must first ssh into one of the HEP login nodes and then ssh from there into one of the GPU machines. To do this run the following, with [username] replaced with your username...
