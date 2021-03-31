@@ -9,7 +9,7 @@ from tqdm import tqdm
 import numpy as np
 from omegaconf import OmegaConf
 
-from src.data.data import load_metadata, find_paths
+from src.data import load_metadata, find_paths
 from src.features.VGGishExtractor import VGGishExtractor
 import src.utils
 
@@ -47,8 +47,9 @@ def main():
 
     # Generate the input and output paths
     output_path = os.path.join(conf.output_path, "vggish")
+    print("Taking input from {}".format(conf.data_audio))
+    print("Extracting output to {}".format(output_path))
     input_paths = find_paths(subset, conf.data_audio, ".ogg")
-
     output_log_mel = find_paths(subset, os.path.join(output_path, "log_mel"), ".pkl")
     output_embedding = find_paths(
         subset, os.path.join(output_path, "embedding"), ".pkl"
@@ -64,11 +65,11 @@ def main():
         output_embedding, output_postprocessed, num_workers=conf.num_workers
     )
 
-    combine_vggish_features(
-        subset.iloc[:1500],
-        output_postprocessed,
-        "/mnt/storage/cdtdisspotify/results/yamnet_scores1.pkl",
-    )
+    #combine_vggish_features(
+    #    subset.iloc[:1500],
+    #    output_postprocessed,
+    #    "/mnt/storage/cdtdisspotify/results/yamnet_scores1.pkl",
+    #)
 
 
 if __name__ == "__main__":

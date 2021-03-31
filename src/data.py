@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Provides helper data related functions."""
+"""Data utilities."""
 
 import json
 import os
@@ -9,13 +9,9 @@ import pandas as pd
 import numpy as np
 
 
-DATA_PATH = "/unix/cdtdisspotify/data/spotify-podcasts-2020/"
-DATA_PATH_GPU02 = "/mnt/storage/cdtdisspotify/eGeMAPSv01b/intermediate/"
-
-
-def load_metadata():
+def load_metadata(path="/unix/cdtdisspotify/data/spotify-podcasts-2020/"):
     """Load the Spotify podcast dataset metadata."""
-    return pd.read_csv(DATA_PATH + "metadata.tsv", delimiter="\t")
+    return pd.read_csv(path + "metadata.tsv", delimiter="\t")
 
 
 def relative_file_path(show_filename_prefix, episode_filename_prefix):
@@ -49,59 +45,6 @@ def find_paths(metadata, base_folder, file_extension):
         path = os.path.join(base_folder, relative_path + file_extension)
         paths.append(path)
     return paths
-
-
-def find_file_paths(show_filename_prefix, episode_filename_prefix):
-    """Get the transcript and audio paths from show and episode prefix.
-
-    Args:
-        show_filename_prefix: As given in metadata-*.tsv
-        episode_filename_prefix: As given in metadata-*.tsv
-
-    Returns:
-        path to transcript .json file
-        path to audio .ogg file
-
-    # TODO also include the sets for summarization-testset
-    """
-    warnings.warn(
-        "This function is deprecated, use the find_paths function with the predefined paths in data_paths.py",
-        DeprecationWarning,
-    )
-
-    relative_file_path = os.path.join(
-        show_filename_prefix[5].upper(),
-        show_filename_prefix[6].upper(),
-        show_filename_prefix,
-        episode_filename_prefix,
-    )
-
-    transcript_path = os.path.join(
-        DATA_PATH, "podcasts-transcripts/", relative_file_path + ".json"
-    )
-    audio_path = os.path.join(DATA_PATH, "podcasts-audio/", relative_file_path + ".ogg")
-    return transcript_path, audio_path
-
-
-def find_file_paths_features(show_filename_prefix, episode_filename_prefix):
-    """Find the feature file on the gpu02 machine
-
-    Args:
-        show_filename_prefix: as given in metadata-*.tsv
-        episode_filename_prefix: as given in metadata-*.tsv
-
-    Returns:
-        path to .pkl feature file on the local storage of the gpu02 machine
-    """
-    warnings.warn(
-        "This function is deprecated, use the find_paths function with the predefined paths in data_paths.py",
-        DeprecationWarning,
-    )
-    relative_path = relative_file_path(show_filename_prefix, episode_filename_prefix)
-
-    feature_path = os.path.join(DATA_PATH_GPU02, relative_path + ".pkl")
-
-    return feature_path
 
 
 def load_transcript(path):

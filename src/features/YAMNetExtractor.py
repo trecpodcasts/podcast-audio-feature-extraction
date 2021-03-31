@@ -10,7 +10,7 @@ import pandas as pd
 from functools import partial
 from src.features import FeatureExtractor
 
-YAMNET_PATH = "./deps/tf_models/research/audioset/yamnet"
+YAMNET_PATH = "./deps/tf-models/research/audioset/yamnet"
 assert os.path.exists(
     YAMNET_PATH
 ), "The set YAMNet path cannot be found, change it in the source code"
@@ -31,8 +31,7 @@ class YAMNetExtractor(FeatureExtractor):
     """
 
     def __init__(self):
-        super().__init__(logfile="./log_YAMNet")
-
+        super().__init__(logfile="./log_yamnet")
         self.model_checkpoint = os.path.join("./data/yamnet.h5")
         self.class_names = os.path.join(YAMNET_PATH, "yamnet_class_map.csv")
         self.sample_rate = 44100
@@ -98,7 +97,6 @@ class YAMNetExtractor(FeatureExtractor):
                 i += di
 
             if save_embedding:
-
                 _, _ = FeatureExtractor.feature_path_checker(
                     input_path, embed_path
                 )  # also create embed path if necessary
@@ -107,7 +105,7 @@ class YAMNetExtractor(FeatureExtractor):
                 df["time (s)"] = np.arange(len(embedding)) * 0.48
                 df.set_index("time (s)", inplace=True)
                 df.astype(np.float16).to_hdf(
-                    embed_path, "YAMNet_Embedding", mode="w", complevel=9
+                    embed_path, "embedding", mode="w", complevel=6
                 )
                 del df
 
@@ -115,7 +113,7 @@ class YAMNetExtractor(FeatureExtractor):
             df["time (s)"] = np.arange(len(score)) * 0.48
             df.set_index("time (s)", inplace=True)
             df.astype(np.float16).to_hdf(
-                output_path, "YAMNet_Score", mode="w", complevel=9
+                output_path, "score", mode="w", complevel=6
             )
 
             del df

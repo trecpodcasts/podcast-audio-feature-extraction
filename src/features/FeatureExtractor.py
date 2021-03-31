@@ -56,7 +56,7 @@ class FeatureExtractor:
     def _process_wrapper(argument, function=lambda x: x, log="./log"):
         try:
             function(argument)
-        except:
+        except Exception:
             with open(log, "a") as f:
                 f.write(
                     "spotify:episode:{}\n".format(argument[0].split("/")[-1][:-4])

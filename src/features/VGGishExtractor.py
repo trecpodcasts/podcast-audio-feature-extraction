@@ -13,7 +13,7 @@ tf.disable_v2_behavior()
 from functools import partial
 from src.features import FeatureExtractor
 
-VGGISH_PATH = "./deps/tf_models/research/audioset/vggish"
+VGGISH_PATH = "./deps/tf-models/research/audioset/vggish"
 assert os.path.exists(
     VGGISH_PATH
 ), "The set VGGish path cannot be found, change it in the source code"
@@ -26,10 +26,15 @@ import vggish_postprocess
 
 
 class VGGishExtractor(FeatureExtractor):
-    def __init__(
-        self,
-    ):
+    """Class for feature extraction with VGGish
 
+    example:
+    ex = VGGishExtractor()
+    ex.pre_processing(input_paths, output_paths)
+    """
+
+    def __init__(self):
+        super().__init__(logfile="./log_vggish")
         self.model_checkpoint = os.path.join("./data/vggish_model.ckpt")
         self.pca_parameters = os.path.join("./data/vggish_pca_params.npz")
 

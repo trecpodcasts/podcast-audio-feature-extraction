@@ -9,6 +9,7 @@ dependencies:
   - pandas=1.2.3
   - omegaconf=2.0.6 
   - sox=14.4.2
+  - pytables=3.6.1
   - matplotlib=3.3.4
   - jupyterlab=3.0.12
   - sentencepiece=0.1.95
@@ -17,7 +18,6 @@ dependencies:
   - pip:
     # Required packages
     - tensorflow==2.4.1
-    - tensorflow-hub==0.11.0
     - torch==1.8.1
     - opensmile==2.0.0
     - librosa==0.8.0

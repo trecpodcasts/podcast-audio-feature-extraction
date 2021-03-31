@@ -7,7 +7,7 @@ import os
 import numpy as np
 from omegaconf import OmegaConf
 
-from src.data.data import load_metadata, find_paths
+from src.data import load_metadata, find_paths
 from src.features.OpenSmileExtractor import OpenSmileExtractor
 
 
@@ -24,6 +24,8 @@ def main():
 
     # Generate the input and output paths
     output_path = os.path.join(conf.output_path, "opensmile")
+    print("Taking input from {}".format(conf.data_audio))
+    print("Extracting output to {}".format(output_path))
     input_paths = find_paths(subset, conf.data_audio, ".ogg")
     output_paths = find_paths(subset, output_path, ".h5")
 

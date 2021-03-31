@@ -15,7 +15,7 @@ class OpenSmileExtractor(FeatureExtractor):
     extractor.extract(paths, num_workers=2)"""
 
     def __init__(self, opensmile_config):
-        super().__init__(logfile="./log_OpenSmile")
+        super().__init__(logfile="./log_opensmile")
         self.smile = opensmile.Smile(  # Create the functionals extractor here
             feature_set=opensmile.FeatureSet.eGeMAPSv02,
             feature_level=opensmile.FeatureLevel.Functionals,
@@ -33,7 +33,6 @@ class OpenSmileExtractor(FeatureExtractor):
         paths = list(zip(input_paths, output_paths))
         self.multi_process(self._process, paths, num_workers=num_workers)
 
-    @staticmethod
     def _process(self, paths):
         input_path, output_path = paths
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
@@ -47,8 +46,7 @@ class OpenSmileExtractor(FeatureExtractor):
             del features["file"]
             del features["end"]
             features.set_index("time (s)", inplace=True)
-
             features.to_hdf(
-                output_path, "OpenSmile_Functionals", mode="w", complevel=9
-            )  # save to pickle file
+                output_path, "functionals", mode="w", complevel=6
+            )
             del features
