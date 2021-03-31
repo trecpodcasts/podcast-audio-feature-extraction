@@ -14,8 +14,8 @@ class OpenSmileExtractor(FeatureExtractor):
     extractor = OpenSmileExtractor()
     extractor.extract(paths, num_workers=2)"""
 
-    def __init__(self, opensmile_config):
-        super().__init__(logfile="./log_opensmile")
+    def __init__(self, opensmile_config, logfile="./log_opensmile"):
+        super().__init__(logfile=logfile)
         self.smile = opensmile.Smile(  # Create the functionals extractor here
             feature_set=opensmile.FeatureSet.eGeMAPSv02,
             feature_level=opensmile.FeatureLevel.Functionals,
@@ -46,7 +46,5 @@ class OpenSmileExtractor(FeatureExtractor):
             del features["file"]
             del features["end"]
             features.set_index("time (s)", inplace=True)
-            features.to_hdf(
-                output_path, "functionals", mode="w", complevel=6
-            )
+            features.to_hdf(output_path, "functionals", mode="w", complevel=6)
             del features

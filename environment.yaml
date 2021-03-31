@@ -16,7 +16,6 @@ dependencies:
   - transformers=4.4.2
   - elasticsearch-dsl=7.3.0
   - pip:
-    # Required packages
     - tensorflow==2.4.1
     - torch==1.8.1
     - opensmile==2.0.0

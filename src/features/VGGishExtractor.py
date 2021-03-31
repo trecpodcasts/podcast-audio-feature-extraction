@@ -33,8 +33,8 @@ class VGGishExtractor(FeatureExtractor):
     ex.pre_processing(input_paths, output_paths)
     """
 
-    def __init__(self):
-        super().__init__(logfile="./log_vggish")
+    def __init__(self, logfile="./log_vggish"):
+        super().__init__(logfile=logfile)
         self.model_checkpoint = os.path.join("./data/vggish_model.ckpt")
         self.pca_parameters = os.path.join("./data/vggish_pca_params.npz")
 

@@ -30,7 +30,7 @@ def main():
     output_paths = find_paths(subset, output_path, ".h5")
 
     # Run the openSMILE feature extraction
-    ex = OpenSmileExtractor(conf.opensmile_config)
+    ex = OpenSmileExtractor(conf.opensmile_config, logfile=os.path.join(conf.output_path, "log_opensmile"))
     ex.extract(input_paths, output_paths, conf.num_workers)
 
 

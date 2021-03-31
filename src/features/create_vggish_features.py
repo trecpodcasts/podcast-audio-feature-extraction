@@ -58,18 +58,18 @@ def main():
         subset, os.path.join(output_path, "postprocessed"), ".pkl"
     )
 
-    ex = VGGishExtractor()
+    ex = VGGishExtractor(logfile=os.path.join(conf.output_path, "log_vggish"))
     ex.pre_processing(input_paths, output_log_mel, num_workers=conf.num_workers)
     ex.embedding(output_log_mel, output_embedding)
     ex.post_processing(
         output_embedding, output_postprocessed, num_workers=conf.num_workers
     )
 
-    #combine_vggish_features(
+    # combine_vggish_features(
     #    subset.iloc[:1500],
     #    output_postprocessed,
     #    "/mnt/storage/cdtdisspotify/results/yamnet_scores1.pkl",
-    #)
+    # )
 
 
 if __name__ == "__main__":

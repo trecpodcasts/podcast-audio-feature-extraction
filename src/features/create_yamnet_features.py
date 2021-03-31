@@ -35,7 +35,7 @@ def main():
     output_paths = find_paths(subset, os.path.join(output_path, "scores"), ".h5")
 
     # Run the YAMnet feature extraction
-    ex = YAMNetExtractor()
+    ex = YAMNetExtractor(logfile=os.path.join(conf.output_path, "log_yamnet"))
     ex.embedding(input_paths, output_paths, embed_paths)
 
 

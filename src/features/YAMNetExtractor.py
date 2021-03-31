@@ -30,8 +30,8 @@ class YAMNetExtractor(FeatureExtractor):
     ex.embedding(input_paths, output_paths, embed_paths)
     """
 
-    def __init__(self):
-        super().__init__(logfile="./log_yamnet")
+    def __init__(self, logfile="./log_yamnet"):
+        super().__init__(logfile=logfile)
         self.model_checkpoint = os.path.join("./data/yamnet.h5")
         self.class_names = os.path.join(YAMNET_PATH, "yamnet_class_map.csv")
         self.sample_rate = 44100
@@ -112,9 +112,7 @@ class YAMNetExtractor(FeatureExtractor):
             df = pd.DataFrame(score, columns=class_names)
             df["time (s)"] = np.arange(len(score)) * 0.48
             df.set_index("time (s)", inplace=True)
-            df.astype(np.float16).to_hdf(
-                output_path, "score", mode="w", complevel=6
-            )
+            df.astype(np.float16).to_hdf(output_path, "score", mode="w", complevel=6)
 
             del df
             del embedding
