@@ -23,6 +23,7 @@ __all__ = [
 
 import json
 import os
+import warnings
 import pandas as pd
 import numpy as np
 
@@ -37,7 +38,7 @@ TFDS_PATH = "/mnt/storage/cdtdisspotify/tensorflow_datasets/"
 DATA_PATH_GPU02 = "/mnt/storage/cdtdisspotify/eGeMAPSv01b/intermediate/"
 SAMPLE_RATE = 16000
 SMILE = opensmile.Smile(  # Create the functionals extractor here
-    feature_set=opensmile.FeatureSet.eGeMAPSv01b, # TODO set this to v02
+    feature_set=opensmile.FeatureSet.eGeMAPSv02, 
     feature_level=opensmile.FeatureLevel.Functionals
 )
 
@@ -95,6 +96,8 @@ def find_file_paths(show_filename_prefix, episode_filename_prefix):
 
     # TODO also include the sets for summarization-testset
     """
+    warning.warn("This function is deprecated, use the find_paths function with the predefined paths in data_paths.py", DeprecationWarning)
+
     relative_file_path = os.path.join(
         show_filename_prefix[5].upper(),
         show_filename_prefix[6].upper(),
@@ -119,6 +122,7 @@ def find_file_paths_features(show_filename_prefix, episode_filename_prefix):
     Returns:
         path to .pkl feature file on the local storage of the gpu02 machine
     """
+    warning.warn("This function is deprecated, use the find_paths function with the predefined paths in data_paths.py", DeprecationWarning)
     relative_path = relative_file_path(show_filename_prefix, episode_filename_prefix)
     
     feature_path = os.path.join(

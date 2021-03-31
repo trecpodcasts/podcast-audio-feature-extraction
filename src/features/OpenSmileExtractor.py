@@ -6,17 +6,29 @@ from src.features import FeatureExtractor
 
 # TODO change over to eGeMAPSv02 before rerunning on full dataset
 SMILE = opensmile.Smile(  # Create the functionals extractor here
-    feature_set=opensmile.FeatureSet.eGeMAPSv01b,
+    feature_set=opensmile.FeatureSet.eGeMAPSv02,
     feature_level=opensmile.FeatureLevel.Functionals,
 )
 
 class OpenSmileExtractor(FeatureExtractor):
     """Class for feature extraction with opensmile
 
+        The configuration for the OpenSmile extractor needs to be altered in the package. In particular the file: "opensmile/core/config/shared/FrameModeFunctionals.conf.inc"
+        
+        You need to change:
+        frameMode = fixed
+        frameSize = 0.96
+        frameStep = 0.48
+        frameCenterSpecial = left
+
+
         example:
-        extractor = OpenSmileExtractor():
+        extractor = OpenSmileExtractor()
         extractor.extract(paths, num_workers=2) 
     """
+    def __init__(self):
+        super().__init__(logfile="./log_OpenSmile")
+
 
     def extract(self, input_paths, output_paths, num_workers=1):
         """extract eGeMAPS features with opensmile using multiprocessing
@@ -35,7 +47,18 @@ class OpenSmileExtractor(FeatureExtractor):
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(input_path, output_path)
 
         if input_path_exists and not output_path_exists:
-            features = SMILE.process_file(input_path, channel=1) 
-            features.to_pickle(output_path) # save to pickle file
+            features = SMILE.process_file(input_path, channel=1)
+            features.reset_index(inplace=True)
+            features["time (s)"] = features["start"].dt.total_seconds()
+            del features["start"]
+            del features["file"]
+            del features["end"]
+            features.set_index("time (s)", inplace=True)
+
+            features.to_hdf(
+                output_path, 
+                'OpenSmile_Functionals', 
+                mode = 'w',
+                complevel=9
+                )# save to pickle file
             del features
-            # TODO change the way this data is saved to be similar to vgg?

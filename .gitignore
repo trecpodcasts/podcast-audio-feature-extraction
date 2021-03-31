@@ -133,3 +133,13 @@ dmypy.json
 
 # vscode settings
 .vscode
+
+# misc files
+.ogg
+.mp4
+.zip
+.csv
+.wav
+.json
+.png
+log*

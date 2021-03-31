@@ -2,9 +2,10 @@
 import os
 import pickle
 import numpy as np
+from tqdm import tqdm
 
 from src.data import load_metadata, find_paths
-from src.data import DATA_AUDIO, DATA_OPENSMILE_FUNCTIONALS_1s, DATA_VGGISH_LOG_MEL, DATA_VGGISH_EMBED, DATA_VGGISH_POSTPROCESSED, DATA_YAMNET_EMBED, DATA_YAMNET_SCORES
+from src.data import DATA_AUDIO, DATA_OPENSMILE_FUNCTIONALS, DATA_VGGISH_LOG_MEL, DATA_VGGISH_EMBED, DATA_VGGISH_POSTPROCESSED, DATA_YAMNET_EMBED, DATA_YAMNET_SCORES
 
 
 
@@ -12,7 +13,7 @@ def run_opensmile(metadata, num_workers=1):
     from src.features import OpenSmileExtractor
     
     input_paths = find_paths(metadata, DATA_AUDIO, ".ogg")
-    output_paths = find_paths(metadata, DATA_OPENSMILE_FUNCTIONALS_1s, ".pkl")
+    output_paths = find_paths(metadata, DATA_OPENSMILE_FUNCTIONALS, ".h5")
     
     ex = OpenSmileExtractor()
     ex.extract(input_paths, output_paths, num_workers=num_workers)
@@ -49,9 +50,9 @@ def combine_vggish_features(metadata, base_dir, output_file="./result.pkl"):
     
     input_paths = find_paths(metadata, base_dir, ".pkl")
     data = {}
-    for i in range(len(metadata)):
+    for i in tqdm(range(len(metadata))):
         if os.path.exists(input_paths[i]):
-            data[metadata.episode_uri.iloc[i]] = pickle.load(open(input_paths[i], "rb")).tolist()
+            data[metadata.episode_uri.iloc[i]] = pickle.load(open(input_paths[i], "rb"))[:6000:5].astype(np.float16).tolist()
     
     with open(output_file, "wb") as file:
         pickle.dump(data, file)
@@ -60,22 +61,22 @@ def run_yamnet(metadata):
     from src.features import YAMNetExtractor
     
     input_paths = find_paths(metadata, DATA_AUDIO, ".ogg")
-    embed_paths = find_paths(metadata, DATA_YAMNET_EMBED, ".pkl")
-    output_paths = find_paths(metadata, DATA_YAMNET_SCORES, ".pkl")
+    embed_paths = find_paths(metadata, DATA_YAMNET_EMBED, ".h5")
+    output_paths = find_paths(metadata, DATA_YAMNET_SCORES, ".h5")
 
     ex = YAMNetExtractor()
     ex.embedding(input_paths, output_paths, embed_paths) # also save embeddings
 
 
 metadata = load_metadata()
-uri_list = np.loadtxt("./uri_list.txt", dtype=str)
+uri_list = np.loadtxt("./uri_list2.txt", dtype=str)
 sel = [uri in uri_list for uri in metadata.episode_uri]
 subset = metadata.iloc[sel]
 num_workers=25
 
 ## opensmile features:
 
-# run_opensmile(subset, num_workers=num_workers)
+run_opensmile(subset, num_workers=num_workers)
 
 
 ## vggish features:
@@ -88,9 +89,9 @@ num_workers=25
 # run_yamnet(subset)
 
 
-## combining vgg features in one file
+# combining vgg features in one file
 # combine_vggish_features(
-#     subset, 
-#     DATA_VGGISH_POSTPROCESSED, 
-#     "/mnt/storage/cdtdisspotify/results/vgg_postprocessed.pkl"
+#     subset.iloc[:1500], 
+#     DATA_YAMNET_SCORES, 
+#     "/mnt/storage/cdtdisspotify/results/yamnet_scores1.pkl"
 #     )

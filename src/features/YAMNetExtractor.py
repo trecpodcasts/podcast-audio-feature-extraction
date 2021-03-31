@@ -4,6 +4,7 @@ import os
 import sys
 import pickle
 import numpy as np
+import pandas as pd
 
 from functools import partial
 from src.features import FeatureExtractor
@@ -17,8 +18,43 @@ import params as yamnet_params
 import yamnet as yamnet_model
 import tensorflow as tf
 
+
+import subprocess as sp
+
+def gpu_setup(level=7000):
+    """ Script to select a free gpu on the machine"""
+    _output_to_list = lambda x: x.decode('ascii').split('\n')[:-1]
+    ACCEPTABLE_AVAILABLE_MEMORY = 1024
+    COMMAND = "nvidia-smi --query-gpu=memory.free --format=csv"
+    memory_free_info = _output_to_list(sp.check_output(COMMAND.split()))[1:]
+    values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
+    free = [True if val>level else False for val in values]
+    gpus = tf.config.list_physical_devices('GPU')
+    to_use = []
+    for free, gpu in zip(free, gpus):
+        if free:
+            tf.config.experimental.set_memory_growth(gpu, True)
+            to_use.append(gpu)
+    try:
+        tf.config.experimental.set_visible_devices(to_use, 'GPU')
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "actual GPUs,", len(logical_gpus), "in use.")
+    except RuntimeError as e:
+        print(e)
+        
+gpu_setup()
+
+
+
 class YAMNetExtractor(FeatureExtractor):
+    """Class for feature extraction with YAMNet
+
+    example:
+    ex = YAMNetExtractor()
+    ex.embedding(input_paths, output_paths, embed_paths)
+    """
     def __init__(self):
+        super().__init__(logfile="./log_YAMNet")
 
         self.model_checkpoint = os.path.join(YAMNET_PATH, "yamnet.h5")
         self.class_names = os.path.join(YAMNET_PATH, "yamnet_class_map.csv")
@@ -34,20 +70,20 @@ class YAMNetExtractor(FeatureExtractor):
 
         paths = list(zip(input_paths, embed_paths, output_paths))
         
-        params = yamnet_params.Params(sample_rate=self.sample_rate, patch_hop_seconds=0.1)
+        params = yamnet_params.Params(sample_rate=self.sample_rate, patch_hop_seconds=0.48)
 
         class_names = yamnet_model.class_names(self.class_names)
         yamnet = yamnet_model.yamnet_frames_model(params)
         yamnet.load_weights(self.model_checkpoint)
 
 
-        func = partial(self._embed, yamnet=yamnet, save_embedding=save_embedding)
+        func = partial(self._embed, yamnet=yamnet, params=params, class_names=class_names, save_embedding=save_embedding)
 
         self.single_process(func, paths)
         
 
     @staticmethod
-    def _embed(paths, yamnet, save_embedding=False):
+    def _embed(paths, yamnet, params, class_names, save_embedding=False):
         input_path, embed_path, output_path = paths
         
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
@@ -59,13 +95,13 @@ class YAMNetExtractor(FeatureExtractor):
             wav_data, sr = sf.read(input_path, dtype=np.int16)
             waveform =  np.mean(wav_data, axis=1) / 32768.0
 
-            approx_size = int(len(waveform)/44100/0.1 ) # approximate (overestimated) size of output
+            approx_size = int(len(waveform)/params.sample_rate/params.patch_hop_seconds ) # approximate (overestimated) size of output
             embedding = np.zeros((approx_size, 1024))
             score = np.zeros((approx_size, 521))
 
             waveform_size = len(waveform)
             i = 0
-            di = 300 * 44100 # 5min segments
+            di = 300 * params.sample_rate # 5min segments
 
             real_size = 0
             while i <= waveform_size:
@@ -84,9 +120,29 @@ class YAMNetExtractor(FeatureExtractor):
 
                 _, _ = FeatureExtractor.feature_path_checker(
                     input_path, embed_path) # also create embed path if necessary
-                pickle.dump(embedding[:real_size], open(embed_path, "wb"))
+
+                df = pd.DataFrame(embedding)
+                df["time (s)"] = np.arange(len(embedding))*0.48
+                df.set_index('time (s)', inplace=True)
+                df.astype(np.float16).to_hdf(
+                    embed_path, 
+                    'YAMNet_Embedding', 
+                    mode = 'w',
+                    complevel=9
+                    )
+                del df
+
+            df = pd.DataFrame(score, columns=class_names)
+            df["time (s)"] = np.arange(len(score))*0.48
+            df.set_index('time (s)', inplace=True)
+            df.astype(np.float16).to_hdf(
+                output_path, 
+                'YAMNet_Score', 
+                mode = 'w',
+                complevel=9
+                )
             
-            pickle.dump(score[:real_size], open(output_path, "wb"))
+            del df            
             del embedding
             del score
             del spectrogram
