@@ -29,6 +29,7 @@ import numpy as np
 
 import opensmile
 import tensorflow as tf
+
 # import tensorflow_io as tfio
 # import tensorflow_datasets as tfds
 
@@ -38,8 +39,8 @@ TFDS_PATH = "/mnt/storage/cdtdisspotify/tensorflow_datasets/"
 DATA_PATH_GPU02 = "/mnt/storage/cdtdisspotify/eGeMAPSv01b/intermediate/"
 SAMPLE_RATE = 16000
 SMILE = opensmile.Smile(  # Create the functionals extractor here
-    feature_set=opensmile.FeatureSet.eGeMAPSv02, 
-    feature_level=opensmile.FeatureLevel.Functionals
+    feature_set=opensmile.FeatureSet.eGeMAPSv02,
+    feature_level=opensmile.FeatureLevel.Functionals,
 )
 
 
@@ -48,14 +49,13 @@ def load_metadata():
     return pd.read_csv(DATA_PATH + "metadata.tsv", delimiter="\t")
 
 
-
 def relative_file_path(show_filename_prefix, episode_filename_prefix):
     """Return the relative filepath based on the episode metadata."""
     return os.path.join(
         show_filename_prefix[5].upper(),
         show_filename_prefix[6].upper(),
         show_filename_prefix,
-        episode_filename_prefix
+        episode_filename_prefix,
     )
 
 
@@ -73,15 +73,14 @@ def find_paths(metadata, base_folder, file_extension):
 
     paths = []
     for i in range(len(metadata)):
-        relative_path = relative_file_path( 
-            metadata.show_filename_prefix.iloc[i], 
-            metadata.episode_filename_prefix.iloc[i] )
-        path = os.path.join(
-            base_folder,
-            relative_path + file_extension
+        relative_path = relative_file_path(
+            metadata.show_filename_prefix.iloc[i],
+            metadata.episode_filename_prefix.iloc[i],
         )
+        path = os.path.join(base_folder, relative_path + file_extension)
         paths.append(path)
     return paths
+
 
 def find_file_paths(show_filename_prefix, episode_filename_prefix):
     """Get the transcript and audio paths from show and episode prefix.
@@ -96,7 +95,10 @@ def find_file_paths(show_filename_prefix, episode_filename_prefix):
 
     # TODO also include the sets for summarization-testset
     """
-    warning.warn("This function is deprecated, use the find_paths function with the predefined paths in data_paths.py", DeprecationWarning)
+    warning.warn(
+        "This function is deprecated, use the find_paths function with the predefined paths in data_paths.py",
+        DeprecationWarning,
+    )
 
     relative_file_path = os.path.join(
         show_filename_prefix[5].upper(),
@@ -118,18 +120,18 @@ def find_file_paths_features(show_filename_prefix, episode_filename_prefix):
     Args:
         show_filename_prefix: as given in metadata-*.tsv
         episode_filename_prefix: as given in metadata-*.tsv
-     
+
     Returns:
         path to .pkl feature file on the local storage of the gpu02 machine
     """
-    warning.warn("This function is deprecated, use the find_paths function with the predefined paths in data_paths.py", DeprecationWarning)
-    relative_path = relative_file_path(show_filename_prefix, episode_filename_prefix)
-    
-    feature_path = os.path.join(
-        DATA_PATH_GPU02,
-        relative_path + ".pkl"   
+    warning.warn(
+        "This function is deprecated, use the find_paths function with the predefined paths in data_paths.py",
+        DeprecationWarning,
     )
-    
+    relative_path = relative_file_path(show_filename_prefix, episode_filename_prefix)
+
+    feature_path = os.path.join(DATA_PATH_GPU02, relative_path + ".pkl")
+
     return feature_path
 
 
@@ -299,7 +301,7 @@ def get_tfds_dataset(
     feature="log_mel",
     split="train",
     positive_noise=None,
-    silence_epsilon=0.002
+    silence_epsilon=0.002,
 ):
     """Gets a TFDS audio dataset as a tf.dataset.
 
@@ -320,7 +322,7 @@ def get_tfds_dataset(
         """Parse the audio to a single sample."""
         y = parse_raw_audio(y, sr)
         if silence_epsilon:
-            y = trim_silence(y, silence_epsilon, SAMPLE_RATE*sample_length)
+            y = trim_silence(y, silence_epsilon, SAMPLE_RATE * sample_length)
         anchor = random_sample(y, SAMPLE_RATE, sample_length, input_type="tfds")
         return {"anchor": anchor, "label": label}
 
@@ -329,7 +331,7 @@ def get_tfds_dataset(
         """Parse the audio to a sequential pair of samples."""
         y = parse_raw_audio(y, sr)
         if silence_epsilon:
-            y = trim_silence(y, silence_epsilon, SAMPLE_RATE*sample_length)
+            y = trim_silence(y, silence_epsilon, SAMPLE_RATE * sample_length)
         sample = random_sample(y, SAMPLE_RATE, sample_length * 2, input_type="tfds")
         anchor, positive = tf.split(sample, 2, axis=0)
         if positive_noise is not None:
@@ -343,7 +345,7 @@ def get_tfds_dataset(
         """Parse the audio to a random pair of samples."""
         y = parse_raw_audio(y, sr)
         if silence_epsilon:
-            y = trim_silence(y, silence_epsilon, SAMPLE_RATE*sample_length)
+            y = trim_silence(y, silence_epsilon, SAMPLE_RATE * sample_length)
         anchor = random_sample(y, SAMPLE_RATE, sample_length, input_type="tfds")
         positive = random_sample(y, SAMPLE_RATE, sample_length, input_type="tfds")
         if positive_noise is not None:
@@ -357,7 +359,7 @@ def get_tfds_dataset(
         """Parse the audio to a sequence of frames of sample_length."""
         y = parse_raw_audio(y, sr)
         if silence_epsilon:
-            y = trim_silence(y, silence_epsilon, SAMPLE_RATE*sample_length)
+            y = trim_silence(y, silence_epsilon, SAMPLE_RATE * sample_length)
         anchor = parse_raw_audio(y, sr, frame_length=sample_length)
         return {"anchor": anchor, "label": label}
 
@@ -429,10 +431,10 @@ def trim_silence(y, epsilon, min_length):
         sample_length: Minimum length of sample to return.
     """
     trim_boundary = tfio.experimental.audio.trim(y, axis=0, epsilon=epsilon)
-    if (trim_boundary[1]-trim_boundary[0]) < min_length:
+    if (trim_boundary[1] - trim_boundary[0]) < min_length:
         return y
     else:
-        return y[trim_boundary[0]:trim_boundary[1]]
+        return y[trim_boundary[0] : trim_boundary[1]]
 
 
 @tf.function
