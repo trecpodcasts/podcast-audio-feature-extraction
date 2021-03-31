@@ -1,14 +1,19 @@
-__all__ = ["VGGishExtractor"]
+# -*- coding: utf-8 -*-
+
+"""VGGish feature extractor."""
 
 import os
 import sys
 import pickle
 import numpy as np
+import tensorflow.compat.v1 as tf  # only tf.v1 in this function
+
+tf.disable_v2_behavior()
 
 from functools import partial
 from src.features import FeatureExtractor
 
-VGGISH_PATH = "/mnt/storage/cdtdisspotify/models/research/audioset/vggish"
+VGGISH_PATH = "./deps/tf_models/research/audioset/vggish"
 assert os.path.exists(
     VGGISH_PATH
 ), "The set VGGish path cannot be found, change it in the source code"
@@ -24,11 +29,9 @@ class VGGishExtractor(FeatureExtractor):
     def __init__(
         self,
     ):
-        import tensorflow.compat.v1 as tf  # only tf.v1 in this function
 
-        tf.disable_v2_behavior()
-        self.model_checkpoint = os.path.join(VGGISH_PATH, "vggish_model.ckpt")
-        self.pca_parameters = os.path.join(VGGISH_PATH, "vggish_pca_params.npz")
+        self.model_checkpoint = os.path.join("./data/vggish_model.ckpt")
+        self.pca_parameters = os.path.join("./data/vggish_pca_params.npz")
 
     def pre_processing(self, input_paths, output_paths, num_workers=1):
         paths = list(zip(input_paths, output_paths))

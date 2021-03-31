@@ -2,16 +2,6 @@
 
 """Provides helper data related functions."""
 
-__all__ = [
-    "load_metadata",
-    "find_file_paths",
-    "find_paths",
-    "find_file_paths_features",
-    "load_transcript",
-    "retrieve_full_transcript",
-    "retrieve_timestamped_transcript"
-]
-
 import json
 import os
 import warnings
@@ -20,7 +10,6 @@ import numpy as np
 
 
 DATA_PATH = "/unix/cdtdisspotify/data/spotify-podcasts-2020/"
-TFDS_PATH = "/mnt/storage/cdtdisspotify/tensorflow_datasets/"
 DATA_PATH_GPU02 = "/mnt/storage/cdtdisspotify/eGeMAPSv01b/intermediate/"
 
 

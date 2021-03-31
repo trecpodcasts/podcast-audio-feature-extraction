@@ -1,0 +1,5 @@
+data_audio: /unix/cdtdisspotify/data/spotify-podcasts-2020/podcasts-audio/
+uri_path: /unix/cdtdisspotify/jtingey/podcast-dataset/data/uri_list2.txt
+output_path: /unix/cdtdisspotify/jtingey/test
+opensmile_config: /unix/cdtdisspotify/jtingey/podcast-dataset/data/custom_FrameModeFunctionals.conf.inc
+num_workers: 2

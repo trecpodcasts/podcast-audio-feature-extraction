@@ -1,15 +1,16 @@
-__all__ = ["YAMNetExtractor"]
+# -*- coding: utf-8 -*-
+
+"""YAMnet feature extractor."""
 
 import os
 import sys
-import pickle
 import numpy as np
 import pandas as pd
 
 from functools import partial
 from src.features import FeatureExtractor
 
-YAMNET_PATH = "/mnt/storage/cdtdisspotify/models/research/audioset/yamnet/"
+YAMNET_PATH = "./deps/tf_models/research/audioset/yamnet"
 assert os.path.exists(
     YAMNET_PATH
 ), "The set YAMNet path cannot be found, change it in the source code"
@@ -19,34 +20,6 @@ import soundfile as sf
 import params as yamnet_params
 import yamnet as yamnet_model
 import tensorflow as tf
-
-
-import subprocess as sp
-
-
-def gpu_setup(level=7000):
-    """ Script to select a free gpu on the machine"""
-    _output_to_list = lambda x: x.decode("ascii").split("\n")[:-1]
-    ACCEPTABLE_AVAILABLE_MEMORY = 1024
-    COMMAND = "nvidia-smi --query-gpu=memory.free --format=csv"
-    memory_free_info = _output_to_list(sp.check_output(COMMAND.split()))[1:]
-    values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
-    free = [True if val > level else False for val in values]
-    gpus = tf.config.list_physical_devices("GPU")
-    to_use = []
-    for free, gpu in zip(free, gpus):
-        if free:
-            tf.config.experimental.set_memory_growth(gpu, True)
-            to_use.append(gpu)
-    try:
-        tf.config.experimental.set_visible_devices(to_use, "GPU")
-        logical_gpus = tf.config.experimental.list_logical_devices("GPU")
-        print(len(gpus), "actual GPUs,", len(logical_gpus), "in use.")
-    except RuntimeError as e:
-        print(e)
-
-
-gpu_setup()
 
 
 class YAMNetExtractor(FeatureExtractor):
@@ -60,7 +33,7 @@ class YAMNetExtractor(FeatureExtractor):
     def __init__(self):
         super().__init__(logfile="./log_YAMNet")
 
-        self.model_checkpoint = os.path.join(YAMNET_PATH, "yamnet.h5")
+        self.model_checkpoint = os.path.join("./data/yamnet.h5")
         self.class_names = os.path.join(YAMNET_PATH, "yamnet_class_map.csv")
         self.sample_rate = 44100
 
@@ -94,13 +67,10 @@ class YAMNetExtractor(FeatureExtractor):
     @staticmethod
     def _embed(paths, yamnet, params, class_names, save_embedding=False):
         input_path, embed_path, output_path = paths
-
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
             input_path, output_path
         )
-
         if input_path_exists and not output_path_exists:
-
             wav_data, sr = sf.read(input_path, dtype=np.int16)
             waveform = np.mean(wav_data, axis=1) / 32768.0
 

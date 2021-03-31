@@ -1,4 +1,6 @@
-__all__ = ["FeatureExtractor"]
+# -*- coding: utf-8 -*-
+
+"""Base feature extraction class."""
 
 import os
 import multiprocessing

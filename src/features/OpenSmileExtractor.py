@@ -1,25 +1,26 @@
-__all__ = ["OpenSmileExtractor"]
+# -*- coding: utf-8 -*-
+
+"""openSMILE feature extractor."""
 
 import opensmile
 
 from src.features import FeatureExtractor
 
-SMILE = opensmile.Smile(  # Create the functionals extractor here
-    feature_set=opensmile.FeatureSet.eGeMAPSv02,
-    feature_level=opensmile.FeatureLevel.Functionals,
-    options = {"frameModeFunctionalsConf": "./opensmile_config/custom_FrameModeFunctionals.conf.inc"}
-)
-
 
 class OpenSmileExtractor(FeatureExtractor):
     """Class for feature extraction with opensmile
 
-        example:
-        extractor = OpenSmileExtractor()
-        extractor.extract(paths, num_workers=2) """
+    example:
+    extractor = OpenSmileExtractor()
+    extractor.extract(paths, num_workers=2)"""
 
-    def __init__(self):
+    def __init__(self, opensmile_config):
         super().__init__(logfile="./log_OpenSmile")
+        self.smile = opensmile.Smile(  # Create the functionals extractor here
+            feature_set=opensmile.FeatureSet.eGeMAPSv02,
+            feature_level=opensmile.FeatureLevel.Functionals,
+            options={"frameModeFunctionalsConf": opensmile_config},
+        )
 
     def extract(self, input_paths, output_paths, num_workers=1):
         """extract eGeMAPS features with opensmile using multiprocessing
@@ -33,13 +34,13 @@ class OpenSmileExtractor(FeatureExtractor):
         self.multi_process(self._process, paths, num_workers=num_workers)
 
     @staticmethod
-    def _process(paths):
+    def _process(self, paths):
         input_path, output_path = paths
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
             input_path, output_path
         )
         if input_path_exists and not output_path_exists:
-            features = SMILE.process_file(input_path, channel=1)
+            features = self.smile.process_file(input_path, channel=1)
             features.reset_index(inplace=True)
             features["time (s)"] = features["start"].dt.total_seconds()
             del features["start"]
