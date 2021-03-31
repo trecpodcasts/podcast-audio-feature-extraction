@@ -84,7 +84,7 @@ def run_yamnet(metadata):
 
 
 metadata = load_metadata()
-uri_list = np.loadtxt("./uri_list2.txt", dtype=str)
+uri_list = np.loadtxt("./data/uri_list2.txt", dtype=str)
 sel = [uri in uri_list for uri in metadata.episode_uri]
 subset = metadata.iloc[sel]
 num_workers = 25
