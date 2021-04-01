@@ -1,17 +1,34 @@
 # podcast-dataset
 
+Spotify Podcast Dataset software
+
 ## Getting started
 
-You need to first download some additional model/data files and initialise the submodules
+Initialise submodules and install dependencies/src...
+
+```bash
+cd podcast-dataset
+git submodule update --init --recursive
+conda env create -f environment.yaml
+conda activate podcasts
+pip install -e .
+```
+
+Download required model files...
 
 ```bash
 curl -o data/vggish_model.ckpt https://storage.googleapis.com/audioset/vggish_model.ckpt
 curl -o data/vggish_pca_params.npz https://storage.googleapis.com/audioset/vggish_pca_params.npz
 curl -o data/yamnet.h5 https://storage.googleapis.com/audioset/yamnet.h5
-git submodule update --init --recursive
 ```
 
-## Usage
+To generate features first modify the config.yaml configuration file for your setup and then run one of the extraction scripts in ./src/features/. For example to generate the eGeMAPS features run...
+
+```bash
+python src/features/create_opensmile_features.py
+```
+
+## UCL HEP computer usage
 
 It is best to use the UCL HEP GPU machines for all work as they are powerful and come equipped with multiple GPUs to dramatically speed up certain computations. To use one of the GPU machines you must first ssh into one of the HEP login nodes and then ssh from there into one of the GPU machines. To do this run the following, with [username] replaced with your username...
 
@@ -60,6 +77,7 @@ To install all the python modules within ./src install in developer mode...
 ```bash
 pip install -e .
 ``` 
+
 The package can be imported using the package `src`. 
 
 ## File structure
@@ -85,11 +103,7 @@ To keep things organised we use the following structure for our code. A typical 
 │   └── visualization  <- Scripts to create exploratory and results-oriented visualizations
 ```
 
-## Installing the software package
-
-
-
-## Using Jupyter Remotely
+## Using Jupyter remotely
 
 For exploratory work, using a Python Jupyter notebook is probably easiest. As we are running everything on a remote machine this is made slightly more difficult as you need to forward the port that Jupyter runs on. Also as multiple people sometimes use the machines Jupyter can start on different ports. The best thing to do is to add the following entry to your local ~/.ssh/config file, with [chosen_port] being a random port you choose. It's probably best to choose one in the 8890-9010 range as these are common Jupyter ports. Note that this will only work from a linux machine (for windows use [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10))
 

@@ -19,7 +19,7 @@ class OpenSmileExtractor(FeatureExtractor):
         self.smile = opensmile.Smile(  # Create the functionals extractor here
             feature_set=opensmile.FeatureSet.eGeMAPSv02,
             feature_level=opensmile.FeatureLevel.Functionals,
-            options={"frameModeFunctionalsConf": opensmile_config},
+            options={"frameModeFunctionalsConf": "./data/custom_FrameModeFunctionals.conf.inc"},
         )
 
     def extract(self, input_paths, output_paths, num_workers=1):

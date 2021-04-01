@@ -15,6 +15,13 @@ class FeatureExtractor:
 
     def __init__(self, logfile="./log"):
         self.log_file = logfile
+
+        # Create the log file
+        log_path_exists = os.path.exists(logfile)
+        if not log_path_exists:
+            directory = os.path.dirname(logfile)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
         f = open(self.log_file, "w")
         f.write("Files skipped:\n")
         f.close()

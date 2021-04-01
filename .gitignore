@@ -1,6 +1,7 @@
 data/vggish_model.ckpt
 data/vggish_pca_params.npz
 data/yamnet.h5
+features/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

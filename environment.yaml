@@ -17,6 +17,7 @@ dependencies:
   - elasticsearch-dsl=7.3.0
   - pip:
     - tensorflow==2.4.1
+    - tf-slim==1.1.0 
     - torch==1.8.1
     - opensmile==2.0.0
     - librosa==0.8.0
