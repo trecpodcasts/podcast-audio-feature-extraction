@@ -14,7 +14,7 @@ from src.features import FeatureExtractor
 VGGISH_PATH = "./deps/tf-models/research/audioset/vggish"
 assert os.path.exists(
     VGGISH_PATH
-), "The set VGGish path cannot be found, change it in the source code"
+), "Can't find VGGish path, need to initialise submodules."
 
 sys.path.append(VGGISH_PATH)
 import vggish_input  # noqa: E402

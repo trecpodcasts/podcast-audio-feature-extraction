@@ -17,16 +17,17 @@ def main():
     conf = OmegaConf.load("./config.yaml")
 
     # Load the metadata and get the subset to use
-    metadata = load_metadata()
+    metadata = load_metadata(conf.dataset_path)
     uri_list = np.loadtxt(conf.uri_path, dtype=str)
     sel = [uri in uri_list for uri in metadata.episode_uri]
     subset = metadata.iloc[sel]
 
     # Generate the input and output paths
+    input_path = os.path.join(conf.dataset_path, "podcasts-audio")
     output_path = os.path.join(conf.output_path, "opensmile")
-    print("Taking input from {}".format(conf.data_audio))
+    print("Taking input from {}".format(input_path))
     print("Extracting output to {}".format(output_path))
-    input_paths = find_paths(subset, conf.data_audio, ".ogg")
+    input_paths = find_paths(subset, input_path, ".ogg")
     output_paths = find_paths(subset, output_path, ".h5")
 
     # Run the openSMILE feature extraction

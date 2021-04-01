@@ -8,9 +8,9 @@ import pandas as pd
 import numpy as np
 
 
-def load_metadata(path="/unix/cdtdisspotify/data/spotify-podcasts-2020/"):
+def load_metadata(dataset_path):
     """Load the Spotify podcast dataset metadata."""
-    return pd.read_csv(path + "metadata.tsv", delimiter="\t")
+    return pd.read_csv(dataset_path + "metadata.tsv", delimiter="\t")
 
 
 def relative_file_path(show_filename_prefix, episode_filename_prefix):

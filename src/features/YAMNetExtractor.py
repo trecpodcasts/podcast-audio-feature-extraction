@@ -14,7 +14,7 @@ from src.features import FeatureExtractor
 YAMNET_PATH = "./deps/tf-models/research/audioset/yamnet"
 assert os.path.exists(
     YAMNET_PATH
-), "The set YAMNet path cannot be found, change it in the source code"
+), "Can't find YAMNet path, need to initialise submodules."
 
 sys.path.append(YAMNET_PATH)
 import params as yamnet_params  # noqa: E402

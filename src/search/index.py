@@ -9,6 +9,7 @@ import numpy as np
 from tqdm import tqdm
 from elasticsearch_dsl import Document, Integer, Text
 from elasticsearch_dsl.connections import connections
+from omegaconf import OmegaConf
 
 import src.data
 
@@ -112,14 +113,16 @@ def main():
     connections.create_connection(hosts=["localhost"])
     init_index()
 
+    conf = OmegaConf.load("./config.yaml")
+
     # For now just index the good subset of podcasts
-    uri_file = open("uri_list.txt", "r")
+    uri_file = open("./data/uri_list.txt", "r")
     uri_to_use = uri_file.read()
     uri_to_use = uri_to_use.split("\n")
     uri_file.close()
 
     # Loop through metadata and add podcast segments to Elasticsearch
-    metadata = src.data.load_metadata()
+    metadata = src.data.load_metadata(conf.dataset_path)
     for index, row in tqdm(metadata.iterrows()):
         if row["episode_uri"] in uri_to_use:
             transcript_path = src.data.find_file_paths(

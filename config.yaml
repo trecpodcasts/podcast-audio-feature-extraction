@@ -1,8 +1,5 @@
-# Path to the input podcast audio 
-data_audio: /unix/cdtdisspotify/data/spotify-podcasts-2020/podcasts-audio/
-
-# Path to the input podcast transcripts
-data_transcripts: /unix/cdtdisspotify/data/spotify-podcasts-2020/podcasts-transcripts
+# Podcast dataset path
+dataset_path: /unix/cdtdisspotify/data/spotify-podcasts-2020/
 
 # Path to list of podcast episode uri's to extract features from
 uri_path: ./data/uri_list_2.txt

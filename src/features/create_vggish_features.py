@@ -41,16 +41,17 @@ def main():
     src.utils.gpu_setup()
 
     # Load the metadata and get the subset to use
-    metadata = load_metadata()
+    metadata = load_metadata(conf.dataset_path)
     uri_list = np.loadtxt(conf.uri_path, dtype=str)
     sel = [uri in uri_list for uri in metadata.episode_uri]
     subset = metadata.iloc[sel]
 
     # Generate the input and output paths
+    input_path = os.path.join(conf.dataset_path, "podcasts-audio")
     output_path = os.path.join(conf.output_path, "vggish")
-    print("Taking input from {}".format(conf.data_audio))
+    print("Taking input from {}".format(input_path))
     print("Extracting output to {}".format(output_path))
-    input_paths = find_paths(subset, conf.data_audio, ".ogg")
+    input_paths = find_paths(subset, input_path, ".ogg")
     output_log_mel = find_paths(subset, os.path.join(output_path, "log_mel"), ".pkl")
     output_embedding = find_paths(
         subset, os.path.join(output_path, "embedding"), ".pkl"
