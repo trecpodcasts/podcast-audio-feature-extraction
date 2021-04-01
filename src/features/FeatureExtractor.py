@@ -21,9 +21,9 @@ class FeatureExtractor:
             directory = os.path.dirname(logfile)
             if not os.path.exists(directory):
                 os.makedirs(directory)
-        f = open(self.log_file, "w")
-        f.write("Files skipped:\n")
-        f.close()
+            f = open(self.log_file, "w")
+            f.write("Files skipped:\n")
+            f.close()
 
     def multi_process(self, function, iterable, num_workers=1):
         """Multiprocessing wrapper for feature extraction.
@@ -35,12 +35,8 @@ class FeatureExtractor:
 
         """
         pbar = tqdm(total=len(iterable))
-
         f = partial(self._process_wrapper, function=function, log=self.log_file)
-        # f = function
-        # callback = partial(lambda x, pbar: pbar.update(1), pbar=pbar)
         with multiprocessing.Pool(processes=num_workers) as pool:
-            # pool.map_async(f, iterable, callback=callback)
             res = [
                 pool.apply_async(f, args=(i,), callback=lambda _: pbar.update(1))
                 for i in iterable
@@ -58,7 +54,6 @@ class FeatureExtractor:
         for i in tqdm(iterable):
             self._process_wrapper(i, function, self.log_file)
 
-    @staticmethod
     def _process_wrapper(argument, function=lambda x: x, log="./log"):
         try:
             function(argument)
