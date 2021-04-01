@@ -4,7 +4,6 @@
 
 import json
 import os
-import warnings
 import pandas as pd
 import numpy as np
 
@@ -25,7 +24,9 @@ def relative_file_path(show_filename_prefix, episode_filename_prefix):
 
 
 def find_paths(metadata, base_folder, file_extension):
-    """Finds the filepath based on the dataset structure based on the metadata, the folder where it is stored and the file extension you want.
+    """Find the filepath based on the dataset structure.
+
+    Uses the metadata, the filepath folder and the file extension you want.
 
     Args:
         metadata (df): The metadata of the files you want to create a path for
@@ -35,7 +36,6 @@ def find_paths(metadata, base_folder, file_extension):
     Returns:
         paths (list): list of paths (str) for all files in the given metadata
     """
-
     paths = []
     for i in range(len(metadata)):
         relative_path = relative_file_path(
@@ -48,14 +48,14 @@ def find_paths(metadata, base_folder, file_extension):
 
 
 def load_transcript(path):
-    """Load a python dictionary with the .json transcript"""
+    """Load a python dictionary with the .json transcript."""
     with open(path, "r") as file:
         transcript = json.load(file)
     return transcript
 
 
 def retrieve_full_transcript(transcript_json):
-    """Load the full transcript without timestamps or speakertags"""
+    """Load the full transcript without timestamps or speakertags."""
     transcript = ""
     for result in transcript_json["results"][:-1]:
         transcript += result["alternatives"][0]["transcript"]
@@ -63,7 +63,7 @@ def retrieve_full_transcript(transcript_json):
 
 
 def retrieve_timestamped_transcript(path):
-    """Load the full transcript with timestamps"""
+    """Load the full transcript with timestamps."""
     with open(path, "r") as file:
         transcript = json.load(file)
 

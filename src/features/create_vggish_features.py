@@ -15,8 +15,10 @@ import src.utils
 
 
 def combine_vggish_features(metadata, base_dir, output_file="./result.pkl"):
-    """combines vggish features of the first 10 min of a podcast (only works with podcast longen than 10min)"""
+    """Combine vggish features of the first 10 min of a podcast.
 
+    Only works with podcast longen than 10min
+    """
     input_paths = find_paths(metadata, base_dir, ".pkl")
     data = {}
     for i in tqdm(range(len(metadata))):
@@ -26,13 +28,12 @@ def combine_vggish_features(metadata, base_dir, output_file="./result.pkl"):
                 .astype(np.float16)
                 .tolist()
             )
-
     with open(output_file, "wb") as file:
         pickle.dump(data, file)
 
 
 def main():
-    """Main method when run as script."""
+    """Run the VGGish feature extraction."""
     # Load the configuration
     conf = OmegaConf.load("./config.yaml")
 

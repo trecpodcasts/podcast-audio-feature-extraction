@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-"""Script to index podcast segments to Elasticsearch'."""
+"""Script to index podcast segments to Elasticsearch."""
 
 import os
 import math
 
 import numpy as np
 from tqdm import tqdm
-from elasticsearch_dsl import Document, Integer, Keyword, Text
+from elasticsearch_dsl import Document, Integer, Text
 from elasticsearch_dsl.connections import connections
 
 import src.data
@@ -24,9 +24,12 @@ class PodcastSegment(Document):
     seg_length = Integer()
 
     class Index:
+        """Elasticsearch index definition."""
+
         name = "segments"
 
     def save(self, **kwargs):
+        """Save the document to Elasticsearch."""
         self.seg_length = len(self.seg_words.split())
         return super(PodcastSegment, self).save(**kwargs)
 
@@ -104,7 +107,7 @@ def init_index():
 
 
 def main():
-    """Main method for dealing with Elasticsearch."""
+    """Index documents to Elasticsearch."""
     # Define client connection and setup index
     connections.create_connection(hosts=["localhost"])
     init_index()

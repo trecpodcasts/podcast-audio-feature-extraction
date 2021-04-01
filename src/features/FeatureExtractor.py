@@ -9,11 +9,10 @@ from tqdm import tqdm
 
 
 class FeatureExtractor:
-    """
-    Base class for feature extractors.
-    """
+    """Base class for feature extractors."""
 
     def __init__(self, logfile="./log"):
+        """Init method for FeatureExtractor."""
         self.log_file = logfile
 
         # Create the log file
@@ -27,7 +26,7 @@ class FeatureExtractor:
         f.close()
 
     def multi_process(self, function, iterable, num_workers=1):
-        """multiprocessing wrapper for feature extraction
+        """Multiprocessing wrapper for feature extraction.
 
         Args:
             function (function): the function to multiprocess
@@ -39,17 +38,17 @@ class FeatureExtractor:
 
         f = partial(self._process_wrapper, function=function, log=self.log_file)
         # f = function
-        callback = partial(lambda x, pbar: pbar.update(1), pbar=pbar)
+        # callback = partial(lambda x, pbar: pbar.update(1), pbar=pbar)
         with multiprocessing.Pool(processes=num_workers) as pool:
             # pool.map_async(f, iterable, callback=callback)
             res = [
                 pool.apply_async(f, args=(i,), callback=lambda _: pbar.update(1))
                 for i in iterable
             ]
-            results = [p.get() for p in res]
+            results = [p.get() for p in res]  # noqa: F841
 
     def single_process(self, function, iterable):
-        """Single core processing wrapper for feature extraction
+        """Single core processing wrapper for feature extraction.
 
         Args:
             function (function): the function to multiprocess
@@ -71,7 +70,8 @@ class FeatureExtractor:
 
     @staticmethod
     def feature_path_checker(input_path, output_path):
-        """
+        """Check the input and output paths.
+
         - Checks if input path exists
         - Creates output directory if necessary
         - Checks whether output file is already created
@@ -84,7 +84,6 @@ class FeatureExtractor:
             input_path_exists (bool): if input file exists
             output_path_exists (bool): if output file already exists
         """
-
         input_path_exists = os.path.exists(input_path)
         output_path_exists = os.path.exists(output_path)
         if not output_path_exists:

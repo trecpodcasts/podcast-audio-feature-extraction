@@ -6,8 +6,9 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-
+import soundfile as sf
 from functools import partial
+
 from src.features import FeatureExtractor
 
 YAMNET_PATH = "./deps/tf-models/research/audioset/yamnet"
@@ -16,14 +17,12 @@ assert os.path.exists(
 ), "The set YAMNet path cannot be found, change it in the source code"
 
 sys.path.append(YAMNET_PATH)
-import soundfile as sf
-import params as yamnet_params
-import yamnet as yamnet_model
-import tensorflow as tf
+import params as yamnet_params  # noqa: E402
+import yamnet as yamnet_model  # noqa: E402
 
 
 class YAMNetExtractor(FeatureExtractor):
-    """Class for feature extraction with YAMNet
+    """Class for feature extraction with YAMNet.
 
     example:
     ex = YAMNetExtractor()
@@ -31,12 +30,14 @@ class YAMNetExtractor(FeatureExtractor):
     """
 
     def __init__(self, logfile="./log_yamnet"):
+        """Init method for YAMNetExtractor."""
         super().__init__(logfile=logfile)
         self.model_checkpoint = os.path.join("./data/yamnet.h5")
         self.class_names = os.path.join(YAMNET_PATH, "yamnet_class_map.csv")
         self.sample_rate = 44100
 
     def embedding(self, input_paths, output_paths, embed_paths=""):
+        """Extract YAMnet features with opensmile using a single process."""
         if embed_paths == "":
             embed_paths = [""] * len(input_paths)
             save_embedding = False
@@ -65,6 +66,7 @@ class YAMNetExtractor(FeatureExtractor):
 
     @staticmethod
     def _embed(paths, yamnet, params, class_names, save_embedding=False):
+        """Individual YAMnet extraction process."""
         input_path, embed_path, output_path = paths
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
             input_path, output_path

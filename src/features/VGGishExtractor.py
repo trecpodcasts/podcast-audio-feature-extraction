@@ -7,10 +7,8 @@ import sys
 import pickle
 import numpy as np
 import tensorflow.compat.v1 as tf  # only tf.v1 in this function
-
-tf.disable_v2_behavior()
-
 from functools import partial
+
 from src.features import FeatureExtractor
 
 VGGISH_PATH = "./deps/tf-models/research/audioset/vggish"
@@ -19,14 +17,16 @@ assert os.path.exists(
 ), "The set VGGish path cannot be found, change it in the source code"
 
 sys.path.append(VGGISH_PATH)
-import vggish_input
-import vggish_slim
-import vggish_params
-import vggish_postprocess
+import vggish_input  # noqa: E402
+import vggish_slim  # noqa: E402
+import vggish_params  # noqa: E402
+import vggish_postprocess  # noqa: E402
+
+tf.disable_v2_behavior()
 
 
 class VGGishExtractor(FeatureExtractor):
-    """Class for feature extraction with VGGish
+    """Class for feature extraction with VGGish.
 
     example:
     ex = VGGishExtractor()
@@ -34,16 +34,19 @@ class VGGishExtractor(FeatureExtractor):
     """
 
     def __init__(self, logfile="./log_vggish"):
+        """Init method for VGGishExtractor."""
         super().__init__(logfile=logfile)
         self.model_checkpoint = os.path.join("./data/vggish_model.ckpt")
         self.pca_parameters = os.path.join("./data/vggish_pca_params.npz")
 
     def pre_processing(self, input_paths, output_paths, num_workers=1):
+        """Run VGGish preprocessing."""
         paths = list(zip(input_paths, output_paths))
         self.multi_process(self._pre_process, paths, num_workers)
 
     @staticmethod
     def _pre_process(paths):
+        """Individual VGGish preprocessing process."""
         input_path, output_path = paths
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
             input_path, output_path
@@ -57,6 +60,7 @@ class VGGishExtractor(FeatureExtractor):
             del features
 
     def embedding(self, input_paths, output_paths):
+        """Run VGGish embedding."""
         paths = list(zip(input_paths, output_paths))
 
         with tf.Graph().as_default(), tf.Session() as sess:
@@ -81,6 +85,7 @@ class VGGishExtractor(FeatureExtractor):
 
     @staticmethod
     def _embed(paths, sess, features_tensor, embedding_tensor):
+        """Individual VGGish embedding process."""
         input_path, output_path = paths
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
             input_path, output_path
@@ -108,6 +113,7 @@ class VGGishExtractor(FeatureExtractor):
             del embedding
 
     def post_processing(self, input_paths, output_paths, num_workers=1):
+        """Run VGGish postprocessing."""
         paths = list(zip(input_paths, output_paths))
         post_processor = vggish_postprocess.Postprocessor(self.pca_parameters)
         func = partial(self._post_process, post_processor=post_processor)
@@ -115,6 +121,7 @@ class VGGishExtractor(FeatureExtractor):
 
     @staticmethod
     def _post_process(paths, post_processor):
+        """Individual VGGish postprocessing process."""
         input_path, output_path = paths
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
             input_path, output_path

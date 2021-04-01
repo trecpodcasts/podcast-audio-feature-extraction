@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+"""Script to run a search query."""
+
 import sys
 import requests
 import argparse
@@ -56,7 +60,7 @@ def parse_args():
 
 
 def main():
-    """Main method when run as script."""
+    """Run a search query."""
     args = parse_args()
     if not args:
         print("Invalid Arguments")

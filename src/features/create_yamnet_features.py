@@ -13,7 +13,7 @@ import src.utils
 
 
 def main():
-    """Main method when run as script."""
+    """Run the YAMnet feature extraction."""
     # Load the configuration
     conf = OmegaConf.load("./config.yaml")
 

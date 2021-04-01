@@ -8,22 +8,26 @@ from src.features import FeatureExtractor
 
 
 class OpenSmileExtractor(FeatureExtractor):
-    """Class for feature extraction with opensmile
+    """Class for feature extraction with opensmile.
 
     example:
     extractor = OpenSmileExtractor()
-    extractor.extract(paths, num_workers=2)"""
+    extractor.extract(paths, num_workers=2)
+    """
 
     def __init__(self, opensmile_config, logfile="./log_opensmile"):
+        """Init method for OpenSmileExtractor."""
         super().__init__(logfile=logfile)
         self.smile = opensmile.Smile(  # Create the functionals extractor here
             feature_set=opensmile.FeatureSet.eGeMAPSv02,
             feature_level=opensmile.FeatureLevel.Functionals,
-            options={"frameModeFunctionalsConf": "./data/custom_FrameModeFunctionals.conf.inc"},
+            options={
+                "frameModeFunctionalsConf": "./data/custom_FrameModeFunctionals.conf.inc"
+            },
         )
 
     def extract(self, input_paths, output_paths, num_workers=1):
-        """extract eGeMAPS features with opensmile using multiprocessing
+        """Extract eGeMAPS features with opensmile using multiprocessing.
 
         Args:
             input_paths  (str): paths to input files
@@ -34,6 +38,7 @@ class OpenSmileExtractor(FeatureExtractor):
         self.multi_process(self._process, paths, num_workers=num_workers)
 
     def _process(self, paths):
+        """Individual opensmile extraction process."""
         input_path, output_path = paths
         input_path_exists, output_path_exists = FeatureExtractor.feature_path_checker(
             input_path, output_path
