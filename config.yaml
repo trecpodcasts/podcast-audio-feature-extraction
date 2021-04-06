@@ -2,11 +2,11 @@
 dataset_path: /unix/cdtdisspotify/data/spotify-podcasts-2020/
 
 # Path to list of podcast episode uri's to extract features from
-uri_path: ./data/uri_list_2.txt
+uri_path: ./data/qrel_uris.txt
 
 # Output location for extracted features. This should just be the base output location
 # as the extraction code creates feature specific folders within this directory (e.g. opensmile)
-output_path: ./features
+output_path: /mnt/storage/cdtdisspotify/features/
 
 # Number of worker threads to use for feature extraction
 num_workers: 8
