@@ -8,19 +8,12 @@ import pickle
 import numpy as np
 import tensorflow.compat.v1 as tf  # only tf.v1 in this function
 from functools import partial
-
-from src.features import FeatureExtractor
-
-VGGISH_PATH = "./deps/tf-models/research/audioset/vggish"
-assert os.path.exists(
-    VGGISH_PATH
-), "Can't find VGGish path, need to initialise submodules."
-
-sys.path.append(VGGISH_PATH)
 import vggish_input  # noqa: E402
 import vggish_slim  # noqa: E402
 import vggish_params  # noqa: E402
 import vggish_postprocess  # noqa: E402
+
+from src.features import FeatureExtractor
 
 tf.disable_v2_behavior()
 

@@ -14,6 +14,12 @@ conda activate podcasts
 pip install -e .
 ```
 
+Setup the environment variables...
+
+```bash
+source env_vars.sh
+```
+
 Download required model files...
 
 ```bash

@@ -18,13 +18,13 @@ def main():
 
     # Load the metadata and get the subset to use
     metadata = load_metadata(conf.dataset_path)
-    uri_list = np.loadtxt(conf.uri_path, dtype=str)
+    uri_list = np.loadtxt(conf.features_uri_path, dtype=str)
     sel = [uri in uri_list for uri in metadata.episode_uri]
     subset = metadata.iloc[sel]
 
     # Generate the input and output paths
     input_path = os.path.join(conf.dataset_path, "podcasts-audio")
-    output_path = os.path.join(conf.output_path, "opensmile")
+    output_path = os.path.join(conf.features_output_path, "opensmile")
     print("Taking input from {}".format(input_path))
     print("Extracting output to {}".format(output_path))
     input_paths = find_paths(subset, input_path, ".ogg")
@@ -32,9 +32,9 @@ def main():
 
     # Run the openSMILE feature extraction
     ex = OpenSmileExtractor(
-        conf.opensmile_config, logfile=os.path.join(conf.output_path, "log_opensmile")
+        conf.opensmile_config, logfile=os.path.join(conf.features_output_path, "log_opensmile")
     )
-    ex.extract(input_paths, output_paths, conf.num_workers)
+    ex.extract(input_paths, output_paths, conf.features_num_workers)
 
 
 if __name__ == "__main__":

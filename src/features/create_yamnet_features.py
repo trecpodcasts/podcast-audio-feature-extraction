@@ -22,13 +22,13 @@ def main():
 
     # Load the metadata and get the subset to use
     metadata = load_metadata(conf.dataset_path)
-    uri_list = np.loadtxt(conf.uri_path, dtype=str)
+    uri_list = np.loadtxt(conf.features_uri_path, dtype=str)
     sel = [uri in uri_list for uri in metadata.episode_uri]
     subset = metadata.iloc[sel]
 
     # Generate the input and output paths
     input_path = os.path.join(conf.dataset_path, "podcasts-audio")
-    output_path = os.path.join(conf.output_path, "yamnet")
+    output_path = os.path.join(conf.features_output_path, "yamnet")
     print("Taking input from {}".format(input_path))
     print("Extracting output to {}".format(output_path))
     input_paths = find_paths(subset, input_path, ".ogg")
@@ -36,7 +36,7 @@ def main():
     output_paths = find_paths(subset, os.path.join(output_path, "scores"), ".h5")
 
     # Run the YAMnet feature extraction
-    ex = YAMNetExtractor(logfile=os.path.join(conf.output_path, "log_yamnet"))
+    ex = YAMNetExtractor(logfile=os.path.join(conf.features_output_path, "log_yamnet"))
     ex.embedding(input_paths, output_paths, embed_paths)
 
 
