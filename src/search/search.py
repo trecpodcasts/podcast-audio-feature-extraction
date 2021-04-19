@@ -148,7 +148,11 @@ class Searcher:
             raise ConnectionError("Could not connect to Elasticsearch.")
         # Unpack the response segments and scores and return
         response = response.json()["hits"]["hits"]
-        segments = [seg["_source"] for seg in response]
+        segments = []
+        for seg in response:
+            seg_dict = seg["_source"]
+            seg_dict["seg_id"] = seg["_id"]
+            segments.append(seg_dict)
         scores = np.array([seg["_score"] for seg in response])
         return segments, scores
 
