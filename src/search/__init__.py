@@ -2,3 +2,4 @@
 
 from .index import add_podcast  # noqa: F401
 from .search import *  # noqa: F401
+from .features import *  # noqa: F401
