@@ -7,6 +7,8 @@ import time
 import requests
 import argparse
 import pickle
+from pprint import pprint
+import json
 
 import pandas as pd
 from tqdm import tqdm
@@ -108,8 +110,8 @@ class Searcher:
         search_df["narration_freq"] = np.array([src.search.yamnet_freq_feature(seg_scores, 3) for seg_scores in search_df["yamnet_scores"]])
 
         # 7) Calculate some more complicated YAMNet features
-        search_df["yamnet_funny"] = np.array([src.search.yamnet_is_funny(seg_scores)[0][1] for seg_scores in search_df["yamnet_scores"]])
-        search_df["yamnet_conversation"] = np.array([src.search.yamnet_is_conversation(seg_scores)[0][1] for seg_scores in search_df["yamnet_scores"]])
+        search_df["yamnet_funny"] = np.array([src.search.yamnet_is_funny(seg_scores) for seg_scores in search_df["yamnet_scores"]])
+        search_df["yamnet_conversation"] = np.array([src.search.yamnet_is_conversation(seg_scores) for seg_scores in search_df["yamnet_scores"]])
 
         # 8) Calculate some more complicated openSMILE features
         search_df["opensmile_debate"] = np.array([src.search.opensmile_is_debate(seg_scores) for seg_scores in search_df["opensmile_scores"]])
@@ -119,10 +121,10 @@ class Searcher:
 
     def rerank(self, search_df, num=5):
         rerank_dict = {}
-        rerank_dict["topical"] = self.rerank_topical(search_df, num)
-        rerank_dict["entertaining"] = self.rerank_entertaining(search_df, num)
-        rerank_dict["subjective"] = self.rerank_subjective(search_df, num)
-        rerank_dict["discussion"] = self.rerank_discussion(search_df, num)
+        rerank_dict["topical"] = self.rerank_topical(search_df, num).tolist()
+        rerank_dict["entertaining"] = self.rerank_entertaining(search_df, num).tolist()
+        rerank_dict["subjective"] = self.rerank_subjective(search_df, num).tolist()
+        rerank_dict["discussion"] = self.rerank_discussion(search_df, num).tolist()
         return rerank_dict
 
     def elasticsearch_query(self, topic_query, topic_desc=None):
@@ -276,16 +278,20 @@ class Searcher:
         # Run each segment through each of the audio models and feature extractors
         smile_score_list, yamnet_scores_list = [], []
         for path, start in zip(tqdm(paths), starts):
-            # Get the segment audio
-            waveform = self.get_audio_segment(path, start)
+            try:
+                # Get the segment audio
+                waveform = self.get_audio_segment(path, start)
 
-            # Run through openSMILE for eGeMAPS features
-            opensmile_features = self.smile.process_signal(waveform, self.sample_rate)
-            smile_score_list.append(opensmile_features)
+                # Run through openSMILE for eGeMAPS features
+                opensmile_features = self.smile.process_signal(waveform, self.sample_rate)
+                smile_score_list.append(opensmile_features)
 
-            # Run through the YAMNet model
-            yamnet_scores, embeddings, spectrogram = self.yamnet_model(waveform)
-            yamnet_scores_list.append(yamnet_scores.numpy())
+                # Run through the YAMNet model
+                yamnet_scores, embeddings, spectrogram = self.yamnet_model(waveform)
+                yamnet_scores_list.append(yamnet_scores.numpy())
+            except Exception:
+                smile_score_list.append(None)
+                yamnet_scores_list.append(None)
 
         return smile_score_list, yamnet_scores_list
 
@@ -416,13 +422,12 @@ def main():
     searcher = Searcher("./config.yaml")  # Setup the searcher
     search_df = searcher.search(args.query, args.desc)
     rerank_dict = searcher.rerank(search_df, args.num)
+    pprint(rerank_dict)
 
-
-
-    print("Top {} {} mood segments:".format(args.num))
-    for res in results:
-        print(res)
-
+    # Save the results to file...
+    results_file = open("segments.json", "w")
+    json.dump(rerank_dict, results_file)
+    results_file.close()
 
 if __name__ == "__main__":
     main()
