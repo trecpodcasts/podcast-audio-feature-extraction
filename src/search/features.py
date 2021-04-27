@@ -78,19 +78,19 @@ def yamnet_is_conversation(yamnet_scores):
 #    s0 = np.mean(opensmile_scores["F1frequency_sma3nz_amean"].to_numpy()) / 551.696
 #    s1 = np.max(opensmile_scores["slopeUV500-1500_sma3nz_amean"].to_numpy()) / 0.015960522
 #    return s0 + s1
-#def opensmile_is_debate(opensmile_scores):
-#    """Predict if a segment is debate from the openSMILE scores.""" 
-#    s0 = np.std(opensmile_scores["mfcc4_sma3_stddevNorm"].to_numpy()) / 142.52017
-#    s1 = np.max(opensmile_scores["slopeUV500_1500_sma3nz_amean"].to_numpy()) / 0.0155821005
-#    return s0 + (12 * s1)
 def opensmile_is_debate(opensmile_scores):
-    """Predict if a segment is debate from the openSMILE scores."""
-    c =  np.mean(opensmile_scores["mfcc4_sma3_stddevNorm"])
-    p = gauss_predict(c,
-                      np.array([[-1.6886425], [-9.844541 ]]),
-                      np.array([[16.348476], [82.52454 ]]),
-                      np.array([[0.81867616], [0.18132384]]))
-    return p
+    """Predict if a segment is debate from the openSMILE scores.""" 
+    s0 = np.std(opensmile_scores["mfcc4_sma3_stddevNorm"].to_numpy()) / 142.52017
+    s1 = np.max(opensmile_scores["slopeUV500-1500_sma3nz_amean"].to_numpy()) / 0.0155821005
+    return s0 + (12 * s1)
+#def opensmile_is_debate(opensmile_scores):
+#    """Predict if a segment is debate from the openSMILE scores."""
+#    c =  np.mean(opensmile_scores["mfcc4_sma3_stddevNorm"])
+#    p = gauss_predict(c,
+#                      np.array([[-1.6886425], [-9.844541 ]]),
+#                      np.array([[16.348476], [82.52454 ]]),
+#                      np.array([[0.81867616], [0.18132384]]))
+#    return p
 
 
 #def opensmile_is_disapproval(opensmile_scores):
@@ -99,17 +99,17 @@ def opensmile_is_debate(opensmile_scores):
 #    s1 = np.mean(opensmile_scores["F1frequency_sma3nz_amean"].to_numpy()) / 551.6959
 #    s2 = np.std(opensmile_scores["mfcc2V_sma3nz_amean"].to_numpy()) / 8.204574
 #    return s0 + s1 + s2
-#def opensmile_is_disapproval(opensmile_scores):
-#    """Predict if a segment is disapproval from the openSMILE scores.""" 
-#    s0 = np.mean(opensmile_scores["spectralFlux_sma3_stddevNorm"].to_numpy()) / 0.8239882
-#    s1 = np.mean(opensmile_scores["F1frequency_sma3nz_amean"].to_numpy()) / 556.0259
-#    s2 = np.mean(opensmile_scores["F2frequency_sma3nz_amean"].to_numpy()) / 1586.24
-#    return (2 * s0) + s1 + s2
 def opensmile_is_disapproval(opensmile_scores):
     """Predict if a segment is disapproval from the openSMILE scores.""" 
-    c =  np.mean(opensmile_scores["mfcc4_sma3_stddevNorm"])
-    p = gauss_predict(c,
-                      np.array([[-1.7017771], [-11.438402 ]]),
-                      np.array([[16.199871], [91.853195]]),
-                      np.array([[0.84457478], [0.15542522]]))
-    return p
+    s0 = np.mean(opensmile_scores["spectralFlux_sma3_stddevNorm"].to_numpy()) / 0.8239882
+    s1 = np.mean(opensmile_scores["F1frequency_sma3nz_amean"].to_numpy()) / 556.0259
+    s2 = np.mean(opensmile_scores["F2frequency_sma3nz_amean"].to_numpy()) / 1586.24
+    return (2 * s0) + s1 + s2
+#def opensmile_is_disapproval(opensmile_scores):
+#    """Predict if a segment is disapproval from the openSMILE scores.""" 
+#    c =  np.mean(opensmile_scores["mfcc4_sma3_stddevNorm"])
+#    p = gauss_predict(c,
+#                      np.array([[-1.7017771], [-11.438402 ]]),
+#                      np.array([[16.199871], [91.853195]]),
+#                      np.array([[0.84457478], [0.15542522]]))
+#    return p
