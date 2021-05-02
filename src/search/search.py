@@ -119,7 +119,7 @@ class Searcher:
         search_df = search_df.fillna(0.0)
         return search_df
 
-    def rerank(self, search_df, num=5):
+    def rerank(self, search_df, num=10):
         rerank_dict = {}
         rerank_dict["topical"] = self.rerank_topical(search_df, num).tolist()
         rerank_dict["entertaining"] = self.rerank_entertaining(search_df, num).tolist()
@@ -295,12 +295,12 @@ class Searcher:
 
         return smile_score_list, yamnet_scores_list
 
-    def rerank_topical(self, search_df, num=5):
+    def rerank_topical(self, search_df, num=10):
         """Rerank the segments just on the topical rerank score."""
         ordered = search_df.sort_values("rerank_score", inplace=False, ascending=False)
         return ordered['seg_id'][:num].to_numpy()
 
-    def rerank_entertaining(self, search_df, num=5):
+    def rerank_entertaining(self, search_df, num=10):
         """Rerank the topical segments according to the "entertaining" mood.
         
         The segment is topically relevant to the topic description AND the topic is 
@@ -311,12 +311,12 @@ class Searcher:
         accepted = search_df[search_df["music_freq"] < 100]
 
         # Accept podcasts with a high YAMNet funny score
-        accepted = accepted[accepted["yamnet_funny"] > 0.1]
+        accepted = accepted[accepted["yamnet_funny"] > 0.5]
 
         # If we accept less than required use the baseline topical rank
         num_accepted = len(accepted)
         if num_accepted < num:
-            print("Not enough 'entertaining' segments found, appending topical rank...")
+            print("Only {} 'entertaining' segments found, appending topical rank...".format(num_accepted))
             topical = self.rerank_topical(search_df, num-num_accepted)
             if num_accepted > 0:
                 accepted.sort_values("rerank_score", inplace=True, ascending=False)
@@ -327,7 +327,7 @@ class Searcher:
             accepted.sort_values("rerank_score", inplace=True, ascending=False)
             return accepted['seg_id'][:num].to_numpy()
 
-    def rerank_subjective(self, search_df, num=5):
+    def rerank_subjective(self, search_df, num=10):
         """Rerank the topical segments according to the "subjective" mood.
         
         The segment is topically relevant to the topic description AND the speaker or 
@@ -337,19 +337,13 @@ class Searcher:
         # Accept podcasts with a a low music frequency score
         accepted = search_df[search_df["music_freq"] < 100]
 
-        # Accept podcasts with a low YAMNet funny score
-        accepted = search_df[search_df["yamnet_funny"] < 0.1]
-
-        # Accept podcasts with a high openSMILE debate score
-        accepted = accepted[accepted["opensmile_debate"] > 10.0]
-
         # Accept podcasts with a high openSMILE dissaproval score
         accepted = accepted[accepted["opensmile_disapproval"] > 4.2]
 
         # If we accept less than required use the baseline topical rank
         num_accepted = len(accepted)
         if num_accepted < num:
-            print("Not enough 'subjective' segments found, appending topical rank...")
+            print("Only {} 'subjective' segments found, appending topical rank...".format(num_accepted))
             topical = self.rerank_topical(search_df, num-num_accepted)
             if num_accepted > 0:
                 accepted.sort_values("rerank_score", inplace=True, ascending=False)
@@ -360,7 +354,7 @@ class Searcher:
             accepted.sort_values("rerank_score", inplace=True, ascending=False)
             return accepted['seg_id'][:num].to_numpy()
 
-    def rerank_discussion(self, search_df, num=5):
+    def rerank_discussion(self, search_df, num=10):
         """Rerank the topical segments according to the "discussion" mood.
         
         The segment is topically relevant to the topic description AND includes more 
@@ -371,14 +365,8 @@ class Searcher:
         # Accept podcasts with a a low music frequency score
         accepted = search_df[search_df["music_freq"] < 100]
 
-        # Accept podcasts with a low YAMNet funny score
-        accepted = search_df[search_df["yamnet_funny"] < 0.1]
-
         # Accept podcasts with a high openSMILE debate score
-        accepted = accepted[accepted["opensmile_debate"] > 10.0]
-
-        # Accept podcasts with a high openSMILE dissaproval score
-        accepted = accepted[accepted["opensmile_disapproval"] > 4.2]
+        accepted = accepted[accepted["opensmile_debate"] > 15.0]
 
         # Accept podcasts with a low YAMNet narration score
         accepted = accepted[accepted["narration_freq"] < 100]
@@ -386,7 +374,7 @@ class Searcher:
         # If we accept less than required use the baseline topical rank
         num_accepted = len(accepted)
         if num_accepted < num:
-            print("Not enough 'discussion' segments found, appending topical rank...")
+            print("Only {} 'discussion' segments found, appending topical rank...".format(num_accepted))
             topical = self.rerank_topical(search_df, num-num_accepted)
             if num_accepted > 0:
                 accepted.sort_values("rerank_score", inplace=True, ascending=False)
@@ -408,7 +396,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Performs a topical segment search")
     parser.add_argument("query", help="topical query title")
     parser.add_argument("--desc", help="topical query description", default=None)
-    parser.add_argument("-n", "--num", help="Number of results to return", default=5)
+    parser.add_argument("-n", "--num", help="Number of results to return", default=10)
     return parser.parse_args()
 
 
