@@ -84,7 +84,7 @@ class YAMNetExtractor(FeatureExtractor):
             while i <= waveform_size:
                 scores, embeddings, spectrogram = yamnet(
                     waveform[i : i + di + int(0.47 * params.sample_rate)]
-                )
+                ) # the 0.47s has to do with yamnet windowing
                 scores = scores.numpy()
                 embeddings = embeddings.numpy()
 

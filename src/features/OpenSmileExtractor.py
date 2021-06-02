@@ -15,14 +15,14 @@ class OpenSmileExtractor(FeatureExtractor):
     extractor.extract(paths, num_workers=2)
     """
 
-    def __init__(self, opensmile_config, logfile="./log_opensmile"):
+    def __init__(self, logfile="./log_opensmile"):
         """Init method for OpenSmileExtractor."""
         super().__init__(logfile=logfile)
         self.smile = opensmile.Smile(  # Create the functionals extractor here
             feature_set=opensmile.FeatureSet.eGeMAPSv02,
             feature_level=opensmile.FeatureLevel.Functionals,
             options={
-                "frameModeFunctionalsConf": "./data/custom_FrameModeFunctionals.conf.inc"
+                "frameModeFunctionalsConf": "./data/custom_FrameModeFunctionals.conf.inc" # this local path might cause trouble
             },
         )
 
