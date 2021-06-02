@@ -1,5 +1,5 @@
 # Podcast dataset path
-dataset_path: /unix/cdtdisspotify/data/spotify-podcasts-2020/
+dataset_path: ./spotify-podcasts-2020/
 
 #### Feature Extraction Configuration ####
 # Path to list of podcast episode uri's to extract features from
