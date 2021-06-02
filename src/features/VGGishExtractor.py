@@ -3,7 +3,6 @@
 """VGGish feature extractor."""
 
 import os
-import sys
 import pickle
 import numpy as np
 import tensorflow.compat.v1 as tf  # only tf.v1 in this function

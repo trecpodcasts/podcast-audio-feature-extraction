@@ -61,7 +61,9 @@ def main():
     )
 
     ex = VGGishExtractor(logfile=os.path.join(conf.features_output_path, "log_vggish"))
-    ex.pre_processing(input_paths, output_log_mel, num_workers=conf.features_num_workers)
+    ex.pre_processing(
+        input_paths, output_log_mel, num_workers=conf.features_num_workers
+    )
     ex.embedding(output_log_mel, output_embedding)
     ex.post_processing(
         output_embedding, output_postprocessed, num_workers=conf.features_num_workers

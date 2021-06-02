@@ -32,7 +32,8 @@ def main():
 
     # Run the openSMILE feature extraction
     ex = OpenSmileExtractor(
-        conf.opensmile_config, logfile=os.path.join(conf.features_output_path, "log_opensmile")
+        conf.opensmile_config,
+        logfile=os.path.join(conf.features_output_path, "log_opensmile"),
     )
     ex.extract(input_paths, output_paths, conf.features_num_workers)
 

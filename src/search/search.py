@@ -40,7 +40,9 @@ class Searcher:
         self.audio_path = os.path.join(conf.dataset_path, "podcasts-audio")
 
         self.es_url = conf.search_es_url  # URL of Elasticsearch to query
-        self.es_num = conf.search_es_num  # Number of segments to request from Elasticsearch
+        self.es_num = (
+            conf.search_es_num
+        )  # Number of segments to request from Elasticsearch
         self.sample_rate = 44100  # Hardcoded sample rate of all podcast audio
 
         # Load the podcast metadata
@@ -89,10 +91,14 @@ class Searcher:
         rerank_scores = self.get_rerank_scores(segments, topic_query, topic_desc)
 
         # 3) Run a rerank now, and only compute audio features on interesting segments
-        segments_slim = [seg for i, seg in enumerate(segments) if rerank_scores[i] > 0.0]
-        es_scores_slim = np.array([score for i, score in enumerate(es_scores) if rerank_scores[i] > 0.0])
-        rerank_scores_slim = np.array([score for score in rerank_scores if score>0.0])
-        
+        segments_slim = [
+            seg for i, seg in enumerate(segments) if rerank_scores[i] > 0.0
+        ]
+        es_scores_slim = np.array(
+            [score for i, score in enumerate(es_scores) if rerank_scores[i] > 0.0]
+        )
+        rerank_scores_slim = np.array([score for score in rerank_scores if score > 0.0])
+
         # 4) Get the audio features for the segments
         opensmile_scores, yamnet_scores = self.get_audio_scores(segments_slim)
 
@@ -104,22 +110,63 @@ class Searcher:
         search_df["yamnet_scores"] = yamnet_scores
 
         # 6) Calculate some simple frequency features from the YAMNet scores
-        search_df["laughter_freq"] = np.array([src.search.yamnet_freq_feature(seg_scores, 13) for seg_scores in search_df["yamnet_scores"]])
-        search_df["music_freq"] = np.array([src.search.yamnet_freq_feature(seg_scores, 132) for seg_scores in search_df["yamnet_scores"]])
-        search_df["conversation_freq"] = np.array([src.search.yamnet_freq_feature(seg_scores, 2) for seg_scores in search_df["yamnet_scores"]])
-        search_df["narration_freq"] = np.array([src.search.yamnet_freq_feature(seg_scores, 3) for seg_scores in search_df["yamnet_scores"]])
+        search_df["laughter_freq"] = np.array(
+            [
+                src.search.yamnet_freq_feature(seg_scores, 13)
+                for seg_scores in search_df["yamnet_scores"]
+            ]
+        )
+        search_df["music_freq"] = np.array(
+            [
+                src.search.yamnet_freq_feature(seg_scores, 132)
+                for seg_scores in search_df["yamnet_scores"]
+            ]
+        )
+        search_df["conversation_freq"] = np.array(
+            [
+                src.search.yamnet_freq_feature(seg_scores, 2)
+                for seg_scores in search_df["yamnet_scores"]
+            ]
+        )
+        search_df["narration_freq"] = np.array(
+            [
+                src.search.yamnet_freq_feature(seg_scores, 3)
+                for seg_scores in search_df["yamnet_scores"]
+            ]
+        )
 
         # 7) Calculate some more complicated YAMNet features
-        search_df["yamnet_funny"] = np.array([src.search.yamnet_is_funny(seg_scores) for seg_scores in search_df["yamnet_scores"]])
-        search_df["yamnet_conversation"] = np.array([src.search.yamnet_is_conversation(seg_scores) for seg_scores in search_df["yamnet_scores"]])
+        search_df["yamnet_funny"] = np.array(
+            [
+                src.search.yamnet_is_funny(seg_scores)
+                for seg_scores in search_df["yamnet_scores"]
+            ]
+        )
+        search_df["yamnet_conversation"] = np.array(
+            [
+                src.search.yamnet_is_conversation(seg_scores)
+                for seg_scores in search_df["yamnet_scores"]
+            ]
+        )
 
         # 8) Calculate some more complicated openSMILE features
-        search_df["opensmile_debate"] = np.array([src.search.opensmile_is_debate(seg_scores) for seg_scores in search_df["opensmile_scores"]])
-        search_df["opensmile_disapproval"] = np.array([src.search.opensmile_is_disapproval(seg_scores) for seg_scores in search_df["opensmile_scores"]])
+        search_df["opensmile_debate"] = np.array(
+            [
+                src.search.opensmile_is_debate(seg_scores)
+                for seg_scores in search_df["opensmile_scores"]
+            ]
+        )
+        search_df["opensmile_disapproval"] = np.array(
+            [
+                src.search.opensmile_is_disapproval(seg_scores)
+                for seg_scores in search_df["opensmile_scores"]
+            ]
+        )
         search_df = search_df.fillna(0.0)
         return search_df
 
     def rerank(self, search_df, num=10):
+        """Return the dict of baseline and audio-enhanced reranked segments."""
         rerank_dict = {}
         rerank_dict["topical"] = self.rerank_topical(search_df, num).tolist()
         rerank_dict["entertaining"] = self.rerank_entertaining(search_df, num).tolist()
@@ -129,12 +176,12 @@ class Searcher:
 
     def elasticsearch_query(self, topic_query, topic_desc=None):
         """Run a topical search query on the Elasticsearch index.
-        
-        Use the "topic_query" and "topic_desc" to search the 
-        "seg_words", "epis_name", "epis_desc" fields. We boost the 
+
+        Use the "topic_query" and "topic_desc" to search the
+        "seg_words", "epis_name", "epis_desc" fields. We boost the
         "seg_words" by a factor of 2 as it is much more important.
         """
-        print("Running Elasticsearch query... ", end = '')
+        print("Running Elasticsearch query... ", end="")
         start_time = time.time()
         if topic_desc:
             topic_input = topic_query + " " + topic_desc
@@ -152,7 +199,7 @@ class Searcher:
         # Attempt the Elasticsearch query
         try:
             response = requests.get(url=self.es_url, json=json)
-        except Exception as e:
+        except Exception:
             raise ConnectionError("Could not connect to Elasticsearch.")
         # Unpack the response segments and scores and return
         response = response.json()["hits"]["hits"]
@@ -162,7 +209,11 @@ class Searcher:
             seg_dict["seg_id"] = seg["_id"]
             segments.append(seg_dict)
         scores = np.array([seg["_score"] for seg in response])
-        print("returned {} segments in {:.2f} seconds".format(len(scores), time.time() - start_time))
+        print(
+            "returned {} segments in {:.2f} seconds".format(
+                len(scores), time.time() - start_time
+            )
+        )
         return segments, scores
 
     def elasticsearch_test(self, num_segments=10):
@@ -176,10 +227,10 @@ class Searcher:
 
     def get_rerank_scores(self, segments, topic_query, topic_desc=None):
         """Get the rerank model scores for the given segments.
-        
-        Use the "query_title" and "query_desc" vs the "seg_words", "epis_name", and "epis_desc" fields.
+
+        Use the "query_title", "query_desc" vs the "seg_words", "epis_name", "epis_desc" fields.
         """
-        print("Getting rerank scores for segments... ", end = '')
+        print("Getting rerank scores for segments... ", end="")
         start_time = time.time()
         # Create the topic query and description input
         if topic_desc:
@@ -188,7 +239,10 @@ class Searcher:
             topic_desc = topic_query
 
         # Create the choices to rank against, we use "seg_words" and "epis_desc" fields
-        choices = [seg["seg_words"] + " " + seg["epis_name"] + " " + seg["epis_desc"] for seg in segments]
+        choices = [
+            seg["seg_words"] + " " + seg["epis_name"] + " " + seg["epis_desc"]
+            for seg in segments
+        ]
 
         # Tokenise the topic_input and choice pairs
         inputs = [
@@ -232,14 +286,18 @@ class Searcher:
         scores = np.array([score[1] for score in logits])
 
         # We just return the second number in the logits, may want to check this
-        print("returned {} scores in {:.2f} seconds".format(len(scores), time.time() - start_time))
+        print(
+            "returned {} scores in {:.2f} seconds".format(
+                len(scores), time.time() - start_time
+            )
+        )
         return scores
 
     def id_to_path_and_start(self, id):
         """Get the audio file path and start for a given segment id."""
         episode_uri, segment_start = id.split("_")
         episode_uri = "spotify:episode:" + episode_uri
-        episode = self.metadata[(self.metadata.episode_uri == episode_uri).values]  
+        episode = self.metadata[(self.metadata.episode_uri == episode_uri).values]
         audio_file = find_paths(episode, self.audio_path, ".ogg")
         return audio_file[0], int(segment_start)
 
@@ -283,7 +341,9 @@ class Searcher:
                 waveform = self.get_audio_segment(path, start)
 
                 # Run through openSMILE for eGeMAPS features
-                opensmile_features = self.smile.process_signal(waveform, self.sample_rate)
+                opensmile_features = self.smile.process_signal(
+                    waveform, self.sample_rate
+                )
                 smile_score_list.append(opensmile_features)
 
                 # Run through the YAMNet model
@@ -298,13 +358,13 @@ class Searcher:
     def rerank_topical(self, search_df, num=10):
         """Rerank the segments just on the topical rerank score."""
         ordered = search_df.sort_values("rerank_score", inplace=False, ascending=False)
-        return ordered['seg_id'][:num].to_numpy()
+        return ordered["seg_id"][:num].to_numpy()
 
     def rerank_entertaining(self, search_df, num=10):
         """Rerank the topical segments according to the "entertaining" mood.
-        
-        The segment is topically relevant to the topic description AND the topic is 
-        presented in a way which the speakers intend to be amusing and entertaining to 
+
+        The segment is topically relevant to the topic description AND the topic is
+        presented in a way which the speakers intend to be amusing and entertaining to
         the listener, rather than informative or evaluative.
         """
         # Accept podcasts with a a low music frequency score
@@ -316,22 +376,26 @@ class Searcher:
         # If we accept less than required use the baseline topical rank
         num_accepted = len(accepted)
         if num_accepted < num:
-            print("Only {} 'entertaining' segments found, appending topical rank...".format(num_accepted))
-            topical = self.rerank_topical(search_df, num-num_accepted)
+            print(
+                "Only {} 'entertaining' segments found, appending topical rank...".format(
+                    num_accepted
+                )
+            )
+            topical = self.rerank_topical(search_df, num - num_accepted)
             if num_accepted > 0:
                 accepted.sort_values("rerank_score", inplace=True, ascending=False)
-                return np.concatenate((accepted['seg_id'], topical))
+                return np.concatenate((accepted["seg_id"], topical))
             else:
                 return topical
         else:
             accepted.sort_values("rerank_score", inplace=True, ascending=False)
-            return accepted['seg_id'][:num].to_numpy()
+            return accepted["seg_id"][:num].to_numpy()
 
     def rerank_subjective(self, search_df, num=10):
         """Rerank the topical segments according to the "subjective" mood.
-        
-        The segment is topically relevant to the topic description AND the speaker or 
-        speakers explicitly and clearly express a polar opinion about the query topic, 
+
+        The segment is topically relevant to the topic description AND the speaker or
+        speakers explicitly and clearly express a polar opinion about the query topic,
         so that the approval or disapproval of the speaker is evident in the segment.
         """
         # Accept podcasts with a a low music frequency score
@@ -343,23 +407,27 @@ class Searcher:
         # If we accept less than required use the baseline topical rank
         num_accepted = len(accepted)
         if num_accepted < num:
-            print("Only {} 'subjective' segments found, appending topical rank...".format(num_accepted))
-            topical = self.rerank_topical(search_df, num-num_accepted)
+            print(
+                "Only {} 'subjective' segments found, appending topical rank...".format(
+                    num_accepted
+                )
+            )
+            topical = self.rerank_topical(search_df, num - num_accepted)
             if num_accepted > 0:
                 accepted.sort_values("rerank_score", inplace=True, ascending=False)
-                return np.concatenate((accepted['seg_id'], topical))
+                return np.concatenate((accepted["seg_id"], topical))
             else:
                 return topical
         else:
             accepted.sort_values("rerank_score", inplace=True, ascending=False)
-            return accepted['seg_id'][:num].to_numpy()
+            return accepted["seg_id"][:num].to_numpy()
 
     def rerank_discussion(self, search_df, num=10):
         """Rerank the topical segments according to the "discussion" mood.
-        
-        The segment is topically relevant to the topic description AND includes more 
-        than one speaker participating with non-trivial topical contribution (e.g. mere grunts, 
-        expressions of agreement, or discourse management cues ("go on", "right", "well, 
+
+        The segment is topically relevant to the topic description AND includes more
+        than one speaker participating with non-trivial topical contribution (e.g. mere grunts,
+        expressions of agreement, or discourse management cues ("go on", "right", "well,
         I don't know ..." etc) are not sufficient).
         """
         # Accept podcasts with a a low music frequency score
@@ -374,18 +442,23 @@ class Searcher:
         # If we accept less than required use the baseline topical rank
         num_accepted = len(accepted)
         if num_accepted < num:
-            print("Only {} 'discussion' segments found, appending topical rank...".format(num_accepted))
-            topical = self.rerank_topical(search_df, num-num_accepted)
+            print(
+                "Only {} 'discussion' segments found, appending topical rank...".format(
+                    num_accepted
+                )
+            )
+            topical = self.rerank_topical(search_df, num - num_accepted)
             if num_accepted > 0:
                 accepted.sort_values("rerank_score", inplace=True, ascending=False)
-                return np.concatenate((accepted['seg_id'], topical))
+                return np.concatenate((accepted["seg_id"], topical))
             else:
                 return topical
         else:
             accepted.sort_values("rerank_score", inplace=True, ascending=False)
-            return accepted['seg_id'][:num].to_numpy()
+            return accepted["seg_id"][:num].to_numpy()
 
     def get_segment_audio(self, id):
+        """Get the audio for a specific segment id."""
         path, start = self.id_to_path_and_start(id)
         audio = self.get_audio_segment(path, start)
         return audio
@@ -416,6 +489,7 @@ def main():
     results_file = open("segments.json", "w")
     json.dump(rerank_dict, results_file)
     results_file.close()
+
 
 if __name__ == "__main__":
     main()

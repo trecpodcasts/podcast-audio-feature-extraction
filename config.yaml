@@ -1,5 +1,5 @@
 # Podcast dataset path
-dataset_path: /unix/cdtdisspotify/data/spotify-podcasts-2020/
+dataset_path: ./spotify-podcasts-2020/
 
 #### Feature Extraction Configuration ####
 # Path to list of podcast episode uri's to extract features from
@@ -16,14 +16,11 @@ features_num_workers: 8
 # Elasticsearch cluster UCL
 search_es_url: http://localhost:9200/segments/_search
 
-# Num to return in Elasticsearch query
+# Num of segments to return from the Elasticsearch query
 search_es_num: 100
 
 # Directory to cache transformer model in
-search_cache_dir: /unix/cdtdisspotify/transformers
+search_cache_dir: ./transformers
 
 # BERT Rerank model to use
 search_rerank_model: amberoad/bert-multilingual-passage-reranking-msmarco
-
-# Textual emotion model to use
-search_emotion_model: kiri-ai/t5-base-qa-summary-emotion
