@@ -139,11 +139,11 @@ dmypy.json
 .vscode
 
 # misc files
-.ogg
-.mp4
-.zip
-.csv
-.wav
-.json
-.png
+*.ogg
+*.mp4
+*.zip
+*.csv
+*.wav
+*.json
+*.png
 log*

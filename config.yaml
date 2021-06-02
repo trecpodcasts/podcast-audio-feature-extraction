@@ -7,6 +7,7 @@ features_uri_path: ./data/uri_list_2.txt
 
 # Output location for extracted features. This should just be the base output location
 # as the extraction code creates feature specific folders within this directory (e.g. opensmile)
+<<<<<<< Updated upstream
 features_output_path: ./features
 
 # Number of worker threads to use for feature extraction
@@ -24,3 +25,9 @@ search_cache_dir: ./transformers
 
 # BERT Rerank model to use
 search_rerank_model: amberoad/bert-multilingual-passage-reranking-msmarco
+=======
+output_path: /mnt/storage/cdtdisspotify/features2/
+
+# Number of worker threads to use for feature extraction
+num_workers: 16
+>>>>>>> Stashed changes
