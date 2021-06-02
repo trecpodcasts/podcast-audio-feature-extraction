@@ -3,22 +3,14 @@
 """YAMnet feature extractor."""
 
 import os
-import sys
 import numpy as np
 import pandas as pd
 import soundfile as sf
 from functools import partial
+import params as yamnet_params
+import yamnet as yamnet_model
 
 from src.features import FeatureExtractor
-
-YAMNET_PATH = "./deps/tf-models/research/audioset/yamnet"
-assert os.path.exists(
-    YAMNET_PATH
-), "Can't find YAMNet path, need to initialise submodules."
-
-sys.path.append(YAMNET_PATH)
-import params as yamnet_params  # noqa: E402
-import yamnet as yamnet_model  # noqa: E402
 
 
 class YAMNetExtractor(FeatureExtractor):
@@ -33,7 +25,9 @@ class YAMNetExtractor(FeatureExtractor):
         """Init method for YAMNetExtractor."""
         super().__init__(logfile=logfile)
         self.model_checkpoint = os.path.join("./data/yamnet.h5")
-        self.class_names = os.path.join(YAMNET_PATH, "yamnet_class_map.csv")
+        self.class_names = os.path.join(
+            os.getenv("YAMNET_PATH"), "yamnet_class_map.csv"
+        )
         self.sample_rate = 44100
 
     def embedding(self, input_paths, output_paths, embed_paths=""):
@@ -84,11 +78,13 @@ class YAMNetExtractor(FeatureExtractor):
             waveform_size = len(waveform)
             i = 0
             n_seconds = 300
-            di = int( n_seconds * params.sample_rate )  # 5min segments
+            di = int(n_seconds * params.sample_rate)  # 5min segments
 
             real_size = 0
             while i <= waveform_size:
-                scores, embeddings, spectrogram = yamnet(waveform[i : i + di +  int(0.47*params.sample_rate)])
+                scores, embeddings, spectrogram = yamnet(
+                    waveform[i : i + di + int(0.47 * params.sample_rate)]
+                )
                 scores = scores.numpy()
                 embeddings = embeddings.numpy()
 

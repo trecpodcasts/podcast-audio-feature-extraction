@@ -53,7 +53,7 @@ class FeatureExtractor:
         """
         for i in tqdm(iterable):
             self._process_wrapper(i, function, self.log_file)
-    
+
     @staticmethod
     def _process_wrapper(argument, function=lambda x: x, log="./log"):
         try:

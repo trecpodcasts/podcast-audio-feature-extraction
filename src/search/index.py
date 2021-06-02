@@ -23,6 +23,7 @@ class PodcastSegment(Document):
     epis_desc = Text(analyzer="snowball")
     seg_words = Text(analyzer="snowball")
     seg_length = Integer()
+    seg_speakers = Integer()
 
     class Index:
         """Elasticsearch index definition."""
@@ -40,7 +41,14 @@ def clean_text(text):
 
     This includes things like episode numbers, advertisements, and links.
     """
-    # TODO: Actual implement some cleaning routines
+
+    def isNaN(string):
+        return string != string
+
+    # For now just check it is not NaN
+    if isNaN(text):
+        text = ""
+
     return text
 
 
@@ -82,6 +90,10 @@ def add_podcast(
         seg_words = transcript["words"][word_indices]
         seg_words = " ".join(seg_words)
 
+        # Find the number of speakers in the segments
+        seg_speakers = transcript["speaker"][word_indices]
+        num_speakers = len(np.unique(seg_speakers))
+
         # Create and save the segment
         segment = PodcastSegment(
             meta={"id": seg_id},
@@ -90,16 +102,12 @@ def add_podcast(
             epis_name=epis_name,
             epis_desc=epis_desc,
             seg_words=seg_words,
+            seg_speakers=num_speakers,
         )
-
-        # Add to Elasticsearch (try 5 times)
-        # TODO: Make it so the segment IDs for unindexed segements are recorded
-        for i in range(5):
-            try:
-                segment.save()
-                break
-            except Exception:
-                print("Retry attempt {}".format(i))
+        try:
+            segment.save()
+        except Exception as e:
+            raise ConnectionError("Indexing error: {}".format(e))
 
 
 def init_index():
@@ -113,28 +121,46 @@ def main():
     connections.create_connection(hosts=["localhost"])
     init_index()
 
-    conf = OmegaConf.load("./config.yaml")
+    # See if there are any failed segments
+    failed_uris = None
+    try:
+        with open("index_failed.txt", "r") as failed_file:
+            failed_uris = [line.rstrip() for line in failed_file]
+    except Exception:
+        pass
 
-    # For now just index the good subset of podcasts
-    uri_file = open("./data/uri_list.txt", "r")
-    uri_to_use = uri_file.read()
-    uri_to_use = uri_to_use.split("\n")
-    uri_file.close()
+    # Open file to write failed uri's to
+    failed_file = open("index_failed.txt", "w")
 
     # Loop through metadata and add podcast segments to Elasticsearch
+    conf = OmegaConf.load("./config.yaml")
+    transcripts_path = os.path.join(conf.dataset_path, "podcasts-transcripts")
     metadata = src.data.load_metadata(conf.dataset_path)
     for index, row in tqdm(metadata.iterrows()):
-        if row["episode_uri"] in uri_to_use:
-            transcript_path = src.data.find_file_paths(
-                row["show_filename_prefix"], row["episode_filename_prefix"]
-            )[0]
-            add_podcast(
-                transcript_path,
-                row["show_name"],
-                row["show_description"],
-                row["episode_name"],
-                row["episode_description"],
+        if (
+            failed_uris and str(row["episode_filename_prefix"]) in failed_uris
+        ) or not failed_uris:
+            transcript_path = os.path.join(
+                transcripts_path,
+                src.data.relative_file_path(
+                    row["show_filename_prefix"], row["episode_filename_prefix"]
+                )
+                + ".json",
             )
+            try:
+                add_podcast(
+                    transcript_path,
+                    row["show_name"],
+                    row["show_description"],
+                    row["episode_name"],
+                    row["episode_description"],
+                )
+            except Exception:
+                pass
+                failed_file.write(str(row["episode_filename_prefix"]) + "\n")
+
+    # Close failed file
+    failed_file.close()
 
 
 if __name__ == "__main__":

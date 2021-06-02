@@ -1,6 +1,3 @@
-[submodule "deps/laughter-detection"]
-	path = deps/laughter-detection
-	url = https://github.com/jrgillick/laughter-detection
 [submodule "deps/tf-models"]
 	path = deps/tf-models
 	url = https://github.com/tensorflow/models.git

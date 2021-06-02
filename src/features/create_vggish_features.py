@@ -42,13 +42,13 @@ def main():
 
     # Load the metadata and get the subset to use
     metadata = load_metadata(conf.dataset_path)
-    uri_list = np.loadtxt(conf.uri_path, dtype=str)
+    uri_list = np.loadtxt(conf.features_uri_path, dtype=str)
     sel = [uri in uri_list for uri in metadata.episode_uri]
     subset = metadata.iloc[sel]
 
     # Generate the input and output paths
     input_path = os.path.join(conf.dataset_path, "podcasts-audio")
-    output_path = os.path.join(conf.output_path, "vggish")
+    output_path = os.path.join(conf.features_output_path, "vggish")
     print("Taking input from {}".format(input_path))
     print("Extracting output to {}".format(output_path))
     input_paths = find_paths(subset, input_path, ".ogg")
@@ -60,11 +60,13 @@ def main():
         subset, os.path.join(output_path, "postprocessed"), ".pkl"
     )
 
-    ex = VGGishExtractor(logfile=os.path.join(conf.output_path, "log_vggish"))
-    ex.pre_processing(input_paths, output_log_mel, num_workers=conf.num_workers)
+    ex = VGGishExtractor(logfile=os.path.join(conf.features_output_path, "log_vggish"))
+    ex.pre_processing(
+        input_paths, output_log_mel, num_workers=conf.features_num_workers
+    )
     ex.embedding(output_log_mel, output_embedding)
     ex.post_processing(
-        output_embedding, output_postprocessed, num_workers=conf.num_workers
+        output_embedding, output_postprocessed, num_workers=conf.features_num_workers
     )
 
     # combine_vggish_features(

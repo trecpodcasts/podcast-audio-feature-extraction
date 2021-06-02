@@ -1,12 +1,26 @@
 # Podcast dataset path
-dataset_path: /unix/cdtdisspotify/data/spotify-podcasts-2020/
+dataset_path: ./spotify-podcasts-2020/
 
+#### Feature Extraction Configuration ####
 # Path to list of podcast episode uri's to extract features from
-uri_path: ./data/qrel_uris.txt
+features_uri_path: ./data/uri_list_2.txt
 
 # Output location for extracted features. This should just be the base output location
 # as the extraction code creates feature specific folders within this directory (e.g. opensmile)
-output_path: /mnt/storage/cdtdisspotify/features/
+features_output_path: ./features
 
 # Number of worker threads to use for feature extraction
-num_workers: 8
+features_num_workers: 8
+
+#### Search Configuration ####
+# Elasticsearch cluster UCL
+search_es_url: http://localhost:9200/segments/_search
+
+# Num of segments to return from the Elasticsearch query
+search_es_num: 100
+
+# Directory to cache transformer model in
+search_cache_dir: ./transformers
+
+# BERT Rerank model to use
+search_rerank_model: amberoad/bert-multilingual-passage-reranking-msmarco
