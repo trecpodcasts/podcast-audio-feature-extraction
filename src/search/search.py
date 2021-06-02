@@ -26,6 +26,12 @@ import yamnet as yamnet_model
 
 from src.data import load_metadata, find_paths
 import src.utils
+from src.search.metrics import (
+    yamnet_freq_feature,
+    yamnet_is_funny,
+    opensmile_is_debate,
+    opensmile_is_disapproval,
+)
 
 
 class Searcher:
@@ -112,53 +118,44 @@ class Searcher:
         # 6) Calculate some simple frequency features from the YAMNet scores
         search_df["laughter_freq"] = np.array(
             [
-                src.search.yamnet_freq_feature(seg_scores, 13)
+                yamnet_freq_feature(seg_scores, 13)
                 for seg_scores in search_df["yamnet_scores"]
             ]
         )
         search_df["music_freq"] = np.array(
             [
-                src.search.yamnet_freq_feature(seg_scores, 132)
+                yamnet_freq_feature(seg_scores, 132)
                 for seg_scores in search_df["yamnet_scores"]
             ]
         )
         search_df["conversation_freq"] = np.array(
             [
-                src.search.yamnet_freq_feature(seg_scores, 2)
+                yamnet_freq_feature(seg_scores, 2)
                 for seg_scores in search_df["yamnet_scores"]
             ]
         )
         search_df["narration_freq"] = np.array(
             [
-                src.search.yamnet_freq_feature(seg_scores, 3)
+                yamnet_freq_feature(seg_scores, 3)
                 for seg_scores in search_df["yamnet_scores"]
             ]
         )
 
         # 7) Calculate some more complicated YAMNet features
         search_df["yamnet_funny"] = np.array(
-            [
-                src.search.yamnet_is_funny(seg_scores)
-                for seg_scores in search_df["yamnet_scores"]
-            ]
-        )
-        search_df["yamnet_conversation"] = np.array(
-            [
-                src.search.yamnet_is_conversation(seg_scores)
-                for seg_scores in search_df["yamnet_scores"]
-            ]
+            [yamnet_is_funny(seg_scores) for seg_scores in search_df["yamnet_scores"]]
         )
 
         # 8) Calculate some more complicated openSMILE features
         search_df["opensmile_debate"] = np.array(
             [
-                src.search.opensmile_is_debate(seg_scores)
+                opensmile_is_debate(seg_scores)
                 for seg_scores in search_df["opensmile_scores"]
             ]
         )
         search_df["opensmile_disapproval"] = np.array(
             [
-                src.search.opensmile_is_disapproval(seg_scores)
+                opensmile_is_disapproval(seg_scores)
                 for seg_scores in search_df["opensmile_scores"]
             ]
         )
@@ -236,7 +233,7 @@ class Searcher:
         if topic_desc:
             topic_input = topic_query + " " + topic_desc
         else:
-            topic_desc = topic_query
+            topic_input = topic_query
 
         # Create the choices to rank against, we use "seg_words" and "epis_desc" fields
         choices = [
@@ -358,7 +355,7 @@ class Searcher:
     def rerank_topical(self, search_df, num=10):
         """Rerank the segments just on the topical rerank score."""
         ordered = search_df.sort_values("rerank_score", inplace=False, ascending=False)
-        return ordered["seg_id"][:num].to_numpy()
+        return ordered["seg_id"].to_numpy()[:num]
 
     def rerank_entertaining(self, search_df, num=10):
         """Rerank the topical segments according to the "entertaining" mood.
@@ -389,7 +386,7 @@ class Searcher:
                 return topical
         else:
             accepted.sort_values("rerank_score", inplace=True, ascending=False)
-            return accepted["seg_id"][:num].to_numpy()
+            return accepted["seg_id"].to_numpy()[:num]
 
     def rerank_subjective(self, search_df, num=10):
         """Rerank the topical segments according to the "subjective" mood.
@@ -420,7 +417,7 @@ class Searcher:
                 return topical
         else:
             accepted.sort_values("rerank_score", inplace=True, ascending=False)
-            return accepted["seg_id"][:num].to_numpy()
+            return accepted["seg_id"].to_numpy()[:num]
 
     def rerank_discussion(self, search_df, num=10):
         """Rerank the topical segments according to the "discussion" mood.
@@ -455,7 +452,7 @@ class Searcher:
                 return topical
         else:
             accepted.sort_values("rerank_score", inplace=True, ascending=False)
-            return accepted["seg_id"][:num].to_numpy()
+            return accepted["seg_id"].to_numpy()[:num]
 
     def get_segment_audio(self, id):
         """Get the audio for a specific segment id."""
@@ -482,7 +479,7 @@ def main():
     src.utils.gpu_setup()  # Setup the GPUs
     searcher = Searcher("./config.yaml")  # Setup the searcher
     search_df = searcher.search(args.query, args.desc)
-    rerank_dict = searcher.rerank(search_df, args.num)
+    rerank_dict = searcher.rerank(search_df, int(args.num))
     pprint(rerank_dict)
 
     # Save the results to file...

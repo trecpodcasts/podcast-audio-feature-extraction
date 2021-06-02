@@ -32,7 +32,7 @@ curl -o data/yamnet.h5 https://storage.googleapis.com/audioset/yamnet.h5
 
 ## Generating features
 
-To generate features, first, modify the config.yaml configuration file for your setup and then run one of the extraction scripts in ./src/features/. For example, to generate the eGeMAPS features run:
+To generate features, first, modify the variables in the config.yaml configuration file, importantly you must set "dataset_path" to the location of the Spotify podcast dataset and "features_uri_path" to a file containing a list of podcast URI's to calculate the features for. Then run one of the extraction scripts in ./src/features/. For example, to generate the eGeMAPS features, run:
 
 ```bash
 python src/features/create_opensmile_features.py
@@ -40,9 +40,9 @@ python src/features/create_opensmile_features.py
 
 ## Segment Retrieval
 
-Segment retrieval requires a running Elasticsearch instance at http://localhost:9200. You can download Elasticsearch from https://www.elastic.co/downloads/elasticsearch.
+Segment retrieval requires a running Elasticsearch instance at http://localhost:9200. You can download Elasticsearch from https://www.elastic.co/downloads/elasticsearch. The segment retrieval procedure calculates the audio features on the fly for the podcast segments, so the features are not required to be generated beforehand.
 
-First, all segment must be indexed into an Elasticsearch index. Modify the config.yaml configuration file for your setup and then run:
+First, all segment must be indexed into an Elasticsearch index. Modify the config.yaml configuration file for your setup, importantly you must set "dataset_path" to the location of the Spotify podcast dataset, and then run:
 
 ```bash
 source src/search/index.py
@@ -53,6 +53,8 @@ You can then run segment retrieval, which will return the baseline textual reran
 ```bash
 source src/search/search.py [topical query title] --desc [topical query description] -n [number of segments to retrieve]
 ```
+
+The output segments will be saved to a "./segments.json" file
 
 ## Notebooks
 

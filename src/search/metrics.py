@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Audio features for search reranking."""
+"""Audio metrics for search reranking."""
 
 import numpy as np
 
