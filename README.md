@@ -2,14 +2,14 @@
 
 Spotify Podcast Dataset software
 
-SHOULD ADD LINK TO REPORT AND PAPER!!!
+A report of our research and the upcoming paper (under review) are available upon request. 
 
 ## Getting started
 
 Initialise submodules and install dependencies/src into a conda environment:
 
 ```bash
-cd podcast-dataset
+cd podcast-audio-feature-extraction
 git submodule update --init --recursive
 conda env create -f environment.yaml
 conda activate podcasts
@@ -60,5 +60,6 @@ The output segments will be saved to a "./segments.json" file
 
 The ./notebooks directory contains some jupyter notebooks we hope will be helpful:
 
-- search.ipynb gives examples from the segment retrieval procedure
+- feature-extraction-demo.ipynb gives examples for the extraction of the features. 
+- search.ipynb gives examples from the segment retrieval procedure.
 
