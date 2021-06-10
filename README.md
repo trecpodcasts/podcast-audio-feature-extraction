@@ -45,13 +45,13 @@ Segment retrieval requires a running Elasticsearch instance at http://localhost:
 First, all segment must be indexed into an Elasticsearch index. Modify the config.yaml configuration file for your setup, importantly you must set "dataset_path" to the location of the Spotify podcast dataset, and then run:
 
 ```bash
-source src/search/index.py
+python src/search/index.py
 ```
 
 You can then run segment retrieval, which will return the baseline textual reranked segments alongside the audio-enhanced ones:
 
 ```bash
-source src/search/search.py [topical query title] --desc [topical query description] -n [number of segments to retrieve]
+python src/search/search.py [topical query title] --desc [topical query description] -n [number of segments to retrieve]
 ```
 
 The output segments will be saved to a "./segments.json" file
