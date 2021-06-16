@@ -21,3 +21,4 @@ dependencies:
     - torch==1.8.1
     - opensmile==2.0.0
     - librosa==0.8.0
+    - tqdm==4.56.0
